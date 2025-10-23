@@ -1,5 +1,5 @@
 # com7033-assignment-Vishbvs666
-## About the Application
+## About the Project
 **App Name - StrokeCare**
 
 **Description-** A secure web application that helps hospitals manage patient data specifically for stroke prediction and prevention. 
