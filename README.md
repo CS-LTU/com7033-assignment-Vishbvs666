@@ -8,4 +8,4 @@
 - Hospitals need better tools to manage stroke risk data
 - Traditional paper records or genetic systems don’t address stroke-specific needs
 
-## Planning
+## Key Features Breakdown
