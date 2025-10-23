@@ -1,6 +1,7 @@
 # com7033-assignment-Vishbvs666
 ## About the Application
 **App Name - StrokeCare**
+
 **Description-** A secure web application that helps hospitals manage patient data specifically for stroke prediction and prevention. 
 **Problem it is aiming to solve-** 
 - Stroke is the 2nd leading cause of death globally 
