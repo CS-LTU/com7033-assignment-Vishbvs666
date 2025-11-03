@@ -1,0 +1,60 @@
+{# app/templates/_partials/navbar.html #}
+<header class="topbar" role="banner">
+  <nav class="nav container">
+    {# brand #}
+    <a href="{{ url_for('main.dashboard') }}" class="brand">StrokeCare</a>
+
+    {# convenience vars #}
+    {% set ep = request.endpoint or '' %}
+
+    {# left menu #}
+    <ul class="menu">
+      <li>
+        <a href="{{ url_for('main.dashboard') }}"
+           aria-current="{{ 'page' if ep == 'main.dashboard' else 'false' }}">
+          Dashboard
+        </a>
+      </li>
+      <li>
+        <a href="{{ url_for('main.import_data') }}"
+           aria-current="{{ 'page' if ep == 'main.import_data' else 'false' }}">
+          Import
+        </a>
+      </li>
+    </ul>
+
+    {# right menu: auth #}
+    <ul class="menu">
+      {% if session.get('user_id') or (current_user is defined and current_user.is_authenticated) %}
+        <li>
+          <span class="muted">
+            Hi, {{
+              session.get('user_name','User')
+              if session.get('user_id')
+              else (current_user.name if current_user.is_authenticated else 'User')
+            }}
+          </span>
+        </li>
+        <li>
+          <form method="post" action="{{ url_for('auth.logout') }}">
+            {{ csrf_token() }}
+            <button type="submit">Sign out</button>
+          </form>
+        </li>
+      {% else %}
+        <li>
+          <a href="{{ url_for('auth.login_get') }}"
+             aria-current="{{ 'page' if ep == 'auth.login_get' else 'false' }}">
+            Sign in
+          </a>
+        </li>
+        <li>
+          <a href="{{ url_for('auth.register_get') }}"
+             aria-current="{{ 'page' if ep == 'auth.register_get' else 'false' }}">
+            Create account
+          </a>
+        </li>
+      {% endif %}
+    </ul>
+  </nav>
+</header>

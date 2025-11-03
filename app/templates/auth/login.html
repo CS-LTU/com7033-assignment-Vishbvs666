@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="auth-combo">
+  <div class="media">
+    <img src="{{ url_for('static', filename='images/signin-image.jpg') }}" alt="Doctor">
+  </div>
+
+  <div class="card">
+    <h1 class="auth-title">Welcome back!</h1>
+    <p class="auth-sub">Sign in to continue managing patients and predictions.</p>
+
+    <form method="post" action="{{ url_for('auth.login_post') }}" novalidate>
+      {{ form.hidden_tag() }}
+
+      <label class="lbl">{{ form.email.label }}</label>
+      {{ form.email(class_='input') }}
+      {% for e in form.email.errors %}<div class="err">{{ e }}</div>{% endfor %}
+
+      <label class="lbl mt">{{ form.password.label }}</label>
+      {{ form.password(class_='input') }}
+      {% for e in form.password.errors %}<div class="err">{{ e }}</div>{% endfor %}
+
+    <div class="actions">
+      <button class="btn btn-primary" type="submit">Sign in</button>
+     <a class="btn btn-ghost" href="{{ url_for('auth.register_get') }}">Create account</a>
+     <a class="btn" href="{{ url_for('auth.demo_login', next=request.args.get('next')) }}">Continue as demo</a>
+    </div>
+
+    </form>
+  </div>
+</section>
+{% endblock %}

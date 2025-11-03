@@ -1,0 +1,8 @@
+{% macro metric_card(value, label, unit='') -%}
+<article class="card">
+  <div class="metric">
+    {{ value if value is not none else '–' }}{% if unit %}<span class="unit">{{ unit }}</span>{% endif %}
+  </div>
+  <div class="label">{{ label }}</div>
+</article>
+{%- endmacro %}

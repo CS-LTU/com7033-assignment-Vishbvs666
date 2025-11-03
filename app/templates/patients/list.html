@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Patients · StrokeCare{% endblock %}
+
+{% block content %}
+<section class="section">
+  <h1 class="h1">Patients</h1>
+  <p class="muted">Demo data for now. I’ll wire real records after auth & DB.</p>
+</section>
+
+<div class="table-wrap">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>ID</th><th>Age</th><th>Gender</th><th>Hypertension</th><th>Smoker</th><th>Risk</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in rows %}
+      <tr>
+        <td>{{ r.id }}</td>
+        <td>{{ r.age }}</td>
+        <td>{{ r.gender }}</td>
+        <td>{{ 'Yes' if r.hypertension else 'No' }}</td>
+        <td>{{ r.smoking|title }}</td>
+        <td>
+          {% set level = (r.risk|string).lower() %}
+          <span class="badge {{ 'high' if level=='high' else ('low' if level=='low' else 'medium') }}">
+            {{ r.risk }}
+          </span>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="6" class="muted">No patients yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

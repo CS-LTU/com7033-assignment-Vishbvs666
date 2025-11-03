@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}Dashboard · StrokeCare{% endblock %}
+
+{% block content %}
+<section class="section">
+  <h1 class="h1">Overview</h1>
+  <p class="muted">Live metrics from your dataset (demo values).</p>
+
+  <div class="cards">
+    <article class="card">
+      <div class="metric">{{ metrics.total_patients }}</div>
+      <div class="label">Total Patients</div>
+    </article>
+
+    <article class="card">
+      <div class="metric">{{ metrics.high_risk_pct }}<span class="unit">%</span></div>
+      <div class="label">High-Risk Patients</div>
+    </article>
+
+    <article class="card">
+      <div class="metric">
+        {{ metrics.avg_glucose if metrics.avg_glucose is not none else '–' }}
+      </div>
+      <div class="label">Avg Glucose</div>
+    </article>
+
+    <article class="card">
+      <div class="metric">
+        {{ metrics.avg_bmi if metrics.avg_bmi is not none else '–' }}
+      </div>
+      <div class="label">Avg BMI</div>
+    </article>
+  </div>
+</section>
+
+<section id="patients" class="section">
+  <div class="row-header">
+    <h2 class="h2">Recent Patients</h2>
+    <a href="#" class="chip">View all</a>
+  </div>
+
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Age</th>
+          <th>Gender</th>
+          <th>Hypertension</th>
+          <th>Smoker</th>
+          <th>Risk</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in rows %}
+        <tr>
+          <td>{{ r.id }}</td>
+          <td>{{ r.age }}</td>
+          <td>{{ r.gender }}</td>
+          <td>{{ 'Yes' if r.hypertension else 'No' }}</td>
+          <td>{{ r.smoking|title }}</td>
+          <td>
+            {% set level = (r.risk|string).lower() %}
+            <span class="badge {{ 'high' if level=='high' else ('low' if level=='low' else 'medium') }}">
+              {{ r.risk }}
+            </span>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="6" class="muted">No patients yet.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}
