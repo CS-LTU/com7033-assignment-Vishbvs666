@@ -24,9 +24,7 @@
         <td>{{ r.smoking|title }}</td>
         <td>
           {% set level = (r.risk|string).lower() %}
-          <span class="badge {{ 'high' if level=='high' else ('low' if level=='low' else 'medium') }}">
-            {{ r.risk }}
-          </span>
+          <span class="badge {{ 'high' if level=='high' else ('low' if level=='low' else 'medium') }}">{{ r.risk }}</span>
         </td>
       </tr>
       {% else %}

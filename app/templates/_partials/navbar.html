@@ -1,60 +1,40 @@
-{# app/templates/_partials/navbar.html #}
-<header class="topbar" role="banner">
-  <nav class="nav container">
-    {# brand #}
-    <a href="{{ url_for('main.dashboard') }}" class="brand">StrokeCare</a>
+<nav class="nav container">
+  <!-- Brand: logo + StrokeCare -->
+  <a href="{{ url_for('main.root') }}" class="brand">
+    <img
+      src="{{ url_for('static', filename='images/logo.png') }}"
+      alt="StrokeCare Logo"
+      class="logo"
+    />
+    <span>StrokeCare</span>
+  </a>
 
-    {# convenience vars #}
-    {% set ep = request.endpoint or '' %}
-
-    {# left menu #}
-    <ul class="menu">
+  <!-- Center menu -->
+  <ul class="menu center-menu">
+    {% if session.get('user_id') %}
       <li>
         <a href="{{ url_for('main.dashboard') }}"
-           aria-current="{{ 'page' if ep == 'main.dashboard' else 'false' }}">
+           aria-current="{{ 'page' if request.endpoint=='main.dashboard' else 'false' }}">
           Dashboard
         </a>
       </li>
       <li>
-        <a href="{{ url_for('main.import_data') }}"
-           aria-current="{{ 'page' if ep == 'main.import_data' else 'false' }}">
-          Import
+        <a href="{{ url_for('main.patients') }}"
+           aria-current="{{ 'page' if request.endpoint=='main.patients' else 'false' }}">
+          Patients
         </a>
       </li>
-    </ul>
+    {% endif %}
+  </ul>
 
-    {# right menu: auth #}
-    <ul class="menu">
-      {% if session.get('user_id') or (current_user is defined and current_user.is_authenticated) %}
-        <li>
-          <span class="muted">
-            Hi, {{
-              session.get('user_name','User')
-              if session.get('user_id')
-              else (current_user.name if current_user.is_authenticated else 'User')
-            }}
-          </span>
-        </li>
-        <li>
-          <form method="post" action="{{ url_for('auth.logout') }}">
-            {{ csrf_token() }}
-            <button type="submit">Sign out</button>
-          </form>
-        </li>
-      {% else %}
-        <li>
-          <a href="{{ url_for('auth.login_get') }}"
-             aria-current="{{ 'page' if ep == 'auth.login_get' else 'false' }}">
-            Sign in
-          </a>
-        </li>
-        <li>
-          <a href="{{ url_for('auth.register_get') }}"
-             aria-current="{{ 'page' if ep == 'auth.register_get' else 'false' }}">
-            Create account
-          </a>
-        </li>
-      {% endif %}
-    </ul>
-  </nav>
-</header>
+  <!-- Right menu (auth) -->
+  <ul class="menu right-menu">
+    {% if session.get('user_id') %}
+      <li><span class="muted">Hi, {{ session.get('user_name','User') }}</span></li>
+      <li><a href="{{ url_for('auth.logout_get') }}">Sign out</a></li>
+    {% else %}
+      <li><a href="{{ url_for('auth.login_get') }}">Sign in</a></li>
+      <li><a href="{{ url_for('auth.register_get') }}">Create account</a></li>
+    {% endif %}
+  </ul>
+</nav>

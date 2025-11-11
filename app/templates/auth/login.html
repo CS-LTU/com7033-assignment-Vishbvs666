@@ -1,33 +1,46 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
+{% block title %}Sign in · StrokeCare{% endblock %}
 
 {% block content %}
-<section class="auth-combo">
-  <div class="media">
-    <img src="{{ url_for('static', filename='images/signin-image.jpg') }}" alt="Doctor">
+<div class="auth-combo clean">
+  <!-- Poster (left) -->
+  <div class="poster">
+    <img src="{{ url_for('static', filename='images/signin-image.jpg') }}" alt="Doctor image">
   </div>
 
+  <!-- Form card (right) -->
   <div class="card">
     <h1 class="auth-title">Welcome back!</h1>
     <p class="auth-sub">Sign in to continue managing patients and predictions.</p>
 
     <form method="post" action="{{ url_for('auth.login_post') }}" novalidate>
-      {{ form.hidden_tag() }}
+      {{ form.csrf_token }}
 
-      <label class="lbl">{{ form.email.label }}</label>
-      {{ form.email(class_='input') }}
-      {% for e in form.email.errors %}<div class="err">{{ e }}</div>{% endfor %}
+      <label class="lbl" for="email">Email</label>
+      {{ form.email(class_="input", id="email", placeholder="you@strokecare.com") }}
+      {% if form.email.errors %}<div class="err">{{ form.email.errors[0] }}</div>{% endif %}
 
-      <label class="lbl mt">{{ form.password.label }}</label>
-      {{ form.password(class_='input') }}
-      {% for e in form.password.errors %}<div class="err">{{ e }}</div>{% endfor %}
+      <div class="row-split">
+        <div class="col">
+          <label class="lbl" for="password">Password</label>
+          {{ form.password(class_="input", id="password", placeholder="••••••••") }}
+          {% if form.password.errors %}<div class="err">{{ form.password.errors[0] }}</div>{% endif %}
+        </div>
+        <div class="col align-end">
+          <a class="link" href="{{ url_for('auth.forgot_get') }}">Forgot password?</a>
+        </div>
+      </div>
 
-    <div class="actions">
-      <button class="btn btn-primary" type="submit">Sign in</button>
-     <a class="btn btn-ghost" href="{{ url_for('auth.register_get') }}">Create account</a>
-     <a class="btn" href="{{ url_for('auth.demo_login', next=request.args.get('next')) }}">Continue as demo</a>
-    </div>
+      <label class="lbl mt" for="role">Login as</label>
+      {{ form.role(class_="input select", id="role") }}
+      {% if form.role.errors %}<div class="err">{{ form.role.errors[0] }}</div>{% endif %}
 
+      <div class="actions">
+        <button class="btn btn-primary" type="submit">Sign in</button>
+        <a class="btn btn-ghost" href="{{ url_for('auth.register_get') }}">Create account</a>
+        <a class="btn btn-ghost" href="{{ url_for('auth.demo_login') }}">Continue as demo</a>
+      </div>
     </form>
   </div>
-</section>
+</div>
 {% endblock %}
