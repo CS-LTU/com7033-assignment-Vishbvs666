@@ -1,90 +1,15 @@
-{% extends "base.html" %}
-{% block title %}Dashboard · StrokeCare{% endblock %}
-
+{% extends 'base.html' %}
+{% block title %}Welcome · StrokeCare{% endblock %}
 {% block content %}
-<div class="container-xxl py-4">
-
-  <div class="d-flex align-items-center justify-content-between mb-3">
-    <div>
-      <h1 class="h4 mb-1">Dashboard</h1>
-      <small class="text-muted">
-        Dataset-backed charts (Kaggle). Model
-        <span class="badge bg-secondary">{{ metrics.model_version }}</span>
-      </small>
-    </div>
-  </div>
-
-  <!-- KPI cards -->
-  <div class="row g-3 mb-4">
-    <div class="col-6 col-lg-3">
-      <div class="card h-100"><div class="card-body">
-        <div class="text-muted small">Total Patients</div>
-        <div class="fs-4 fw-semibold">{{ metrics.total }}</div>
-      </div></div>
-    </div>
-    <div class="col-6 col-lg-3">
-      <div class="card h-100"><div class="card-body">
-        <div class="text-muted small">Stroke Prevalence</div>
-        <div class="fs-4 fw-semibold">{{ '%.1f'|format(metrics.pct_high) }}%</div>
-      </div></div>
-    </div>
-    <div class="col-6 col-lg-3">
-      <div class="card h-100"><div class="card-body">
-        <div class="text-muted small">Avg Glucose</div>
-        <div class="fs-4 fw-semibold">{{ metrics.avg_glucose }}</div>
-      </div></div>
-    </div>
-    <div class="col-6 col-lg-3">
-      <div class="card h-100"><div class="card-body">
-        <div class="text-muted small">Avg BMI</div>
-        <div class="fs-4 fw-semibold">{{ metrics.avg_bmi }}</div>
-      </div></div>
-    </div>
-  </div>
-
-  <!-- Hidden JSON for charts (read by external JS to satisfy CSP) -->
-  <div id="charts-data" data-json='{{ charts|tojson|e }}'></div>
-
-  <!-- Charts grid -->
-  <div class="row g-4">
-    <div class="col-12 col-lg-4">
-      <div class="card h-100">
-        <div class="card-header py-3"><strong>Outcome Breakdown</strong></div>
-        <div class="card-body"><canvas id="chartPie"></canvas></div>
-      </div>
-    </div>
-
-    <div class="col-12 col-lg-8">
-      <div class="card h-100">
-        <div class="card-header py-3"><strong>Stroke Rate by Age</strong></div>
-        <div class="card-body"><canvas id="chartAge"></canvas></div>
-      </div>
-    </div>
-
-    <div class="col-12 col-lg-6">
-      <div class="card h-100">
-        <div class="card-header py-3"><strong>Stroke Rate by BMI</strong></div>
-        <div class="card-body"><canvas id="chartBMI"></canvas></div>
-      </div>
-    </div>
-
-    <div class="col-12 col-lg-6">
-      <div class="card h-100">
-        <div class="card-header py-3"><strong>Glucose Bands · Counts</strong></div>
-        <div class="card-body"><canvas id="chartGlu"></canvas></div>
-      </div>
-    </div>
-
-    <div class="col-12">
-      <div class="card h-100">
-        <div class="card-header py-3"><strong>Stroke Rate by Smoking Status</strong></div>
-        <div class="card-body"><canvas id="chartSmoke"></canvas></div>
+  <div class="text-center my-5">
+    <h1 class="display-5 fw-bold">Welcome to StrokeCare</h1>
+    <p class="lead text-secondary">Secure health intelligence platform · Violet theme · Dual DB (SQLite + Mongo)</p>
+    <div class="row justify-content-center mt-4">
+      <div class="col-md-8">
+        <div class="card sc-card p-4">
+          <p class="mb-0">App booted successfully. Next: Auth + RBAC + Patients + Predictions.</p>
+        </div>
       </div>
     </div>
   </div>
-</div>
-
-<!-- Scripts: CDN Chart.js allowed by CSP; our logic is local -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="{{ url_for('static', filename='js/dashboard_charts.js') }}"></script>
 {% endblock %}
