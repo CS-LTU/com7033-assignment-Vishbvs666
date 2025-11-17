@@ -1,29 +1,22 @@
+# config.py
 import os
-from dotenv import load_dotenv
 
-__all__ = ["load_config"]  # helps Pylance find the symbol
+basedir = os.path.abspath(os.path.dirname(__file__))
 
-def load_config(app):
-    """Load environment + app defaults (SQLite + Mongo + security)."""
-    load_dotenv()
-    app.config.update(
-        # Flask
-        SECRET_KEY=os.getenv("SECRET_KEY", "dev"),
-        JSON_SORT_KEYS=False,
 
-        # SQLite
-        SQLALCHEMY_DATABASE_URI=os.getenv("SQLALCHEMY_DATABASE_URI", "sqlite:///instance/strokecare.db"),
-        SQLALCHEMY_TRACK_MODIFICATIONS=False,
+class Config:
+    # Secret key for sessions / CSRF
+    SECRET_KEY = os.environ.get("SECRET_KEY", "dev-change-me")
 
-        # Mongo (Atlas)
-        MONGO_URI=os.getenv("MONGO_URI", ""),
-
-        # Sessions (72h auto-expire)
-        PERMANENT_SESSION_LIFETIME=60 * 60 * 72,
-        SESSION_COOKIE_HTTPONLY=True,
-        SESSION_COOKIE_SAMESITE="Lax",
-        SESSION_COOKIE_SECURE=False,  # set True in production with HTTPS
-
-        # Rate limit backend (memory by default)
-        RATELIMIT_STORAGE_URI=os.getenv("RATELIMIT_STORAGE_URI", "memory://"),
+    # Main SQLite DB in instance/strokecare.db
+    SQLALCHEMY_DATABASE_URI = os.environ.get(
+        "DATABASE_URL",
+        "sqlite:///" + os.path.join(basedir, "instance", "strokecare.db"),
     )
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+
+    # Session timeout (minutes)
+    SECURITY_SESSION_MINUTES = int(os.environ.get("SECURITY_SESSION_MINUTES", 60))
+
+    # Optional: simple default rate limit
+    RATELIMIT_DEFAULT = "60 per minute"

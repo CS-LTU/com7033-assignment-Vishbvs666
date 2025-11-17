@@ -1,35 +1,59 @@
-# app/forms.py
-from __future__ import annotations
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SelectField, SubmitField
-from wtforms.fields import EmailField
+from wtforms import StringField, PasswordField, SubmitField, BooleanField, SelectField
 from wtforms.validators import DataRequired, Email, Length, EqualTo
 
-class RegisterForm(FlaskForm):
-    name = StringField(
-        "Full name",
-        validators=[DataRequired(), Length(min=2, max=120)]
-    )
-    email = EmailField(
+# -------------------------
+# Login Form
+# -------------------------
+class LoginForm(FlaskForm):
+    email = StringField(
         "Email",
-        validators=[DataRequired(), Email(), Length(max=255)]
+        validators=[DataRequired(), Email(), Length(max=120)],
     )
     password = PasswordField(
         "Password",
-        validators=[DataRequired(), Length(min=8)]
+        validators=[DataRequired(), Length(min=6)],
+    )
+    remember_me = BooleanField("Keep me signed in")
+    submit = SubmitField("Sign In")
+
+
+# -------------------------
+# Registration Form
+# -------------------------
+class RegistrationForm(FlaskForm):
+    email = StringField(
+        "Email",
+        validators=[DataRequired(), Email()],
+    )
+    password = PasswordField(
+        "Password",
+        validators=[DataRequired(), Length(min=6)],
     )
     confirm_password = PasswordField(
-        "Confirm password",
-        validators=[DataRequired(), EqualTo("password", message="Passwords must match")]
+        "Confirm Password",
+        validators=[DataRequired(), EqualTo("password")],
     )
     role = SelectField(
         "Role",
         choices=[
             ("admin", "Admin"),
             ("doctor", "Doctor"),
-            ("healthcare", "Healthcare"),
+            ("hcp", "Healthcare Professional"),
             ("patient", "Patient"),
         ],
-        validators=[DataRequired()]
+        validators=[DataRequired()],
     )
-    submit = SubmitField("Create account")
+    submit = SubmitField("Register")
+
+
+# -------------------------
+# Reset Password Form (optional)
+# -------------------------
+class ResetPasswordForm(FlaskForm):
+    password = PasswordField("New Password", validators=[DataRequired(), Length(min=6)])
+    confirm_password = PasswordField(
+        "Confirm Password",
+        validators=[DataRequired(), EqualTo("password")],
+    )
+    submit = SubmitField("Reset Password")

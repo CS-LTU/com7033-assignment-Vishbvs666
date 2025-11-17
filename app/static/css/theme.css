@@ -1,17 +1,430 @@
-:root{
-  --bg:#0d0b14; --surface:#131024; --card:#16132b; --border:#26233a;
-  --text:#e5e7eb; --muted:#9ca3af; --violet:#7c3aed;
+/* ==========================================
+   Global theme variables (Pastel Medical Theme)
+   ========================================== */
+:root {
+  --sc-sky-top: #f6ecff;         /* lilac */
+  --sc-sky-mid: #fcf7ff;         /* very light lilac */
+  --sc-sky-bottom: #ffffff;
+
+  --sc-primary: #c77ae6;         /* lilac */
+  --sc-primary-dark: #8e54b8;    /* deeper lilac */
+  --sc-primary-soft: rgba(199, 122, 230, 0.18);
+
+  --sc-secondary: #f59ac3;       /* pastel pink */
+
+  --sc-card-bg: rgba(255, 255, 255, 0.88); /* soft translucent for WebKit */
+  --sc-card-border: rgba(148, 163, 184, 0.24);
+
+  --sc-text-main: #1f2933;
+  --sc-text-muted: #8a90a2;
+
+  --sc-shadow-soft: 0 26px 80px rgba(148, 132, 180, 0.25);
+
+  --sc-radius-card: 30px;
+  --sc-radius-pill: 999px;
 }
-html,body{height:100%}
-body{
-  background:radial-gradient(1200px 800px at 20% -10%, rgba(124,58,237,.18), transparent 60%),
-             radial-gradient(1000px 600px at 90% 10%, rgba(124,58,237,.12), transparent 60%),
-             var(--bg);
-  color:var(--text);
-  font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+/* ==========================================
+   Base layout
+   ========================================== */
+.app-body {
+  min-height: 100vh;
+  margin: 0;
+  background-color: #f7f3fb;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro", "Segoe UI", sans-serif;
+  color: var(--sc-text-main);
 }
-.sc-nav{background:#0f0c1c; border-bottom:1px solid var(--border);}
-.sc-card{background:var(--card); border:1px solid var(--border); border-radius:16px; box-shadow:0 12px 28px rgba(0,0,0,.25);}
-.btn-violet{background:var(--violet); color:#fff; border-radius:999px;}
-.btn-violet:hover{filter:brightness(1.1); color:#fff;}
-.table{--bs-table-bg:transparent}
+
+.app-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.flash-container {
+  max-width: 640px;
+}
+
+/* ==========================================
+   SKY BACKGROUND (Safari-friendly)
+   ========================================== */
+
+.sc-body.auth-sky {
+  background: linear-gradient(
+    to bottom,
+    var(--sc-sky-top),
+    var(--sc-sky-mid) 45%,
+    var(--sc-sky-bottom) 100%
+  );
+  position: relative;
+  overflow: hidden;
+}
+
+/* soft circular arcs */
+.sc-body.auth-sky::before,
+.sc-body.auth-sky::after {
+  content: "";
+  position: absolute;
+  inset: 35% -40% -20%;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  pointer-events: none;
+
+  /* Safari smoothing */
+  -webkit-mask-image: radial-gradient(circle, white 70%, transparent 100%);
+  mask-image: radial-gradient(circle, white 70%, transparent 100%);
+}
+
+.sc-body.auth-sky::after {
+  inset: 50% -60% -25%;
+  border-color: rgba(226, 213, 255, 0.75);
+}
+
+/* ==========================================
+   Brand Bar
+   ========================================== */
+
+.sc-brand-bar {
+  z-index: 5;
+  position: relative;
+}
+
+.sc-logo {
+  width: 40px;
+  height: 40px;
+  border-radius: 14px;
+  background: #ffffff;
+  border: 1px solid rgba(199, 122, 230, 0.35);
+
+  box-shadow: 0 10px 24px rgba(148, 132, 180, 0.45);
+
+  /* macOS smoothing */
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+}
+
+.sc-logo-mark {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--sc-primary-dark);
+  letter-spacing: 0.06em;
+}
+
+.sc-logo-text {
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: #2d1f3d;
+}
+
+/* ==========================================
+   Main Auth Container
+   ========================================== */
+
+.auth-page-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.auth-main {
+  flex: 1;
+  padding: 32px 16px 48px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+/* glowing orb behind card (Safari version) */
+.auth-orbit-layer {
+  position: absolute;
+  width: 620px;
+  height: 620px;
+  border-radius: 50%;
+  pointer-events: none;
+
+  background: radial-gradient(
+    circle at 45% 20%,
+    rgba(255, 255, 255, 0.94),
+    rgba(232, 216, 255, 0.35) 55%,
+    transparent 75%
+  );
+
+  /* Safari */
+  -webkit-mask-image: radial-gradient(circle, white 80%, transparent 100%);
+  mask-image: radial-gradient(circle, white 80%, transparent 100%);
+}
+
+/* ==========================================
+   AUTH CARD (Safari blur optimized)
+   ========================================== */
+
+.auth-card-floating {
+  position: relative;
+  max-width: 460px;
+  width: 100%;
+  border-radius: var(--sc-radius-card);
+
+  background: var(--sc-card-bg);
+  border: 1px solid var(--sc-card-border);
+
+  padding: 42px 32px 28px;
+  box-shadow: var(--sc-shadow-soft);
+
+  /* CRUCIAL for macOS Safari – smooth glass effect */
+  -webkit-backdrop-filter: blur(18px) saturate(180%);
+  backdrop-filter: blur(18px) saturate(180%);
+}
+
+.auth-card-inner {
+  margin-top: 20px;
+}
+
+/* icon badge */
+.auth-card-icon {
+  position: absolute;
+  top: -36px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.icon-pill {
+  width: 76px;
+  height: 76px;
+  border-radius: 26px;
+
+  background: linear-gradient(145deg, #ffffff, #f6ecff);
+  border: 1px solid rgba(208, 190, 255, 0.9);
+  box-shadow: 0 18px 40px rgba(148, 132, 180, 0.55);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  /* Safari blur */
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+.icon-symbol {
+  font-size: 1.8rem;
+  color: var(--sc-primary-dark);
+}
+
+/* ==========================================
+   Typography
+   ========================================== */
+
+.auth-heading {
+  font-size: 1.45rem;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 0.4rem;
+  color: #2d1f3d;
+}
+
+.auth-tagline {
+  font-size: 0.9rem;
+  color: var(--sc-text-muted);
+  text-align: center;
+  margin-bottom: 1.8rem;
+}
+
+/* ==========================================
+   Input styling (Safari friendly)
+   ========================================== */
+
+.sc-input-group .input-group-text {
+  border-radius: 999px 0 0 999px;
+  background: #f8f2ff;
+  border-color: #e4d8f5;
+  border-right: 0;
+
+  color: #b4a2d0;
+}
+
+.sc-input-group .form-control {
+  border-radius: 0 999px 999px 0;
+  border-left: 0;
+  border-color: #e4d8f5;
+  background: #fbf8ff;
+  padding-inline: 0.9rem;
+
+  /* Safari fix */
+  -webkit-appearance: none;  /* Safari/iOS */
+   appearance: none;          /* Chrome/Firefox */
+}
+
+.sc-input-group .form-control:focus {
+  border-color: var(--sc-primary);
+  box-shadow: 0 0 0 2px var(--sc-primary-soft);
+
+  background: #ffffff;
+}
+
+.sc-input-addon-end {
+  border-radius: 0 999px 999px 0;
+  background: #f8f2ff;
+  border-color: #e4d8f5;
+  color: #b4a2d0;
+}
+
+/* ==========================================
+   Buttons
+   ========================================== */
+
+.sc-primary-btn {
+  border-radius: 999px;
+  border: none;
+  font-weight: 500;
+  font-size: 0.98rem;
+
+  background-image: linear-gradient(
+    120deg,
+    var(--sc-primary-dark),
+    var(--sc-secondary)
+  );
+  color: #fff;
+}
+
+.sc-primary-btn:hover {
+  background-image: linear-gradient(120deg, #6f3f9c, #f472b6);
+}
+
+/* ==========================================
+   Divider
+   ========================================== */
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.auth-divider-line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(208, 190, 255, 0.9),
+    transparent
+  );
+}
+
+.auth-divider-text {
+  font-size: 0.78rem;
+  color: var(--sc-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+}
+
+/* ==========================================
+   Social Login Buttons
+   ========================================== */
+
+.sc-social-btn {
+  border-radius: var(--sc-radius-pill);
+  border: 1px solid rgba(208, 190, 255, 0.9);
+  background: rgba(255, 255, 255, 0.96);
+  padding: 6px 14px;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  /* Safari anti-glare fix */
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+
+  font-size: 0.82rem;
+  color: var(--sc-text-main);
+}
+
+.sc-social-btn:hover {
+  background: #fbf8ff;
+  border-color: rgba(199, 122, 230, 0.8);
+}
+
+.sc-social-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+}
+
+.sc-social-dot.google {
+  background: radial-gradient(circle at 30% 30%, #fff, #ea4335);
+}
+.sc-social-dot.facebook {
+  background: #1877f2;
+}
+.sc-social-dot.apple {
+  background: #111827;
+}
+
+/* ==========================================
+   Responsive
+   ========================================== */
+@media (max-width: 576px) {
+  .auth-main {
+    padding-inline: 12px;
+  }
+
+  .auth-card-floating {
+    padding-inline: 22px;
+  }
+
+  .auth-orbit-layer {
+    width: 500px;
+    height: 500px;
+  }
+}
+
+/* ---------------------------
+   Top Right Auth Navigation
+---------------------------- */
+
+.sc-auth-nav {
+    position: absolute;
+    top: 32px;
+    right: 48px;
+
+    display: flex;
+    gap: 24px;
+
+    font-family: "Inter", sans-serif;
+    z-index: 999;
+}
+
+.sc-auth-link {
+    font-size: 15px;
+    color: #6a5c86;
+    text-decoration: none;
+    font-weight: 500;
+    padding: 6px 12px;
+    border-radius: 10px;
+
+    transition: 0.25s ease;
+}
+
+.sc-auth-link:hover {
+    background: rgba(255, 255, 255, 0.6);
+    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px);
+    color: #5a4d70;
+}
+
+/* Highlight active page */
+.sc-auth-link.active {
+    background: rgba(255, 255, 255, 0.75);
+    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px);
+    color: #4a3f5c;
+    font-weight: 600;
+}
+
+.sc-auth-header {
+  position: relative;
+  z-index: 20;
+}

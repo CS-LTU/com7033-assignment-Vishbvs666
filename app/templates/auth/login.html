@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block title %}Sign in · StrokeCare{% endblock title %}
+
+{% block body_class %}sc-body auth-sky{% endblock body_class %}
+
+{% block content %}
+<div class="auth-page-shell">
+  <!-- Top-left brand bar -->
+
+
+  <!-- Main auth area -->
+  <main class="auth-main">
+    <div class="auth-orbit-layer"></div>
+
+    <div class="auth-card-floating">
+      <!-- Icon badge on top of card -->
+      <div class="auth-card-icon">
+        <div class="icon-pill">
+          <span class="icon-symbol">➜</span>
+        </div>
+      </div>
+
+      <div class="auth-card-inner">
+        <h1 class="auth-heading">Sign in with email</h1>
+        <p class="auth-tagline">
+          Access StrokeCare to manage patients, predictions, and audit logs.
+        </p>
+
+        <form method="post" action="{{ url_for('auth.login') }}" novalidate>
+           {{ form.hidden_tag() }}
+
+
+          <!-- Email -->
+          <div class="mb-3">
+            <label class="form-label" for="{{ form.email.id }}">Email</label>
+            <div class="input-group sc-input-group">
+              <span class="input-group-text">
+                <i class="bi bi-envelope"></i>
+              </span>
+              {{ form.email(class="form-control", placeholder="you@hospital.nhs.uk") }}
+            </div>
+            {% if form.email.errors %}
+              <div class="form-text text-danger small">
+                {{ form.email.errors[0] }}
+              </div>
+            {% endif %}
+          </div>
+
+          <!-- Password -->
+          <div class="mb-2">
+            <div class="d-flex justify-content-between align-items-center">
+              <label class="form-label mb-0" for="{{ form.password.id }}">Password</label>
+              <a href="#" class="sc-link-muted small">Forgot password?</a>
+            </div>
+            <div class="input-group sc-input-group">
+              <span class="input-group-text">
+                <i class="bi bi-lock"></i>
+              </span>
+              {{ form.password(class="form-control", placeholder="Enter your password") }}
+              <!-- (Optional) eye icon placeholder on right -->
+              <span class="input-group-text sc-input-addon-end">
+                <i class="bi bi-eye-slash"></i>
+              </span>
+            </div>
+            {% if form.password.errors %}
+              <div class="form-text text-danger small">
+                {{ form.password.errors[0] }}
+              </div>
+            {% endif %}
+          </div>
+
+          <!-- Remember me -->
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <div class="form-check">
+              {{ form.remember_me(class="form-check-input", id="rememberMe") }}
+              <label class="form-check-label" for="rememberMe">
+                Keep me signed in
+              </label>
+            </div>
+          </div>
+
+          <!-- Primary button -->
+          <div class="d-grid mb-3">
+            {{ form.submit(class="btn btn-dark sc-primary-btn py-2") }}
+          </div>
+
+          <!-- Divider -->
+          <div class="auth-divider">
+            <span class="auth-divider-line"></span>
+            <span class="auth-divider-text">Or sign in with</span>
+            <span class="auth-divider-line"></span>
+          </div>
+
+          <!-- Social buttons (just UI placeholders) -->
+          <div class="d-flex justify-content-center gap-3 mt-3">
+            <button type="button" class="btn sc-social-btn">
+              <span class="sc-social-dot google"></span>
+              <span class="sc-social-text">Google</span>
+            </button>
+            <button type="button" class="btn sc-social-btn">
+              <span class="sc-social-dot facebook"></span>
+              <span class="sc-social-text">Facebook</span>
+            </button>
+            <button type="button" class="btn sc-social-btn">
+              <span class="sc-social-dot apple"></span>
+              <span class="sc-social-text">Apple</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+</div>
+{% endblock content %}

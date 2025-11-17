@@ -1,31 +1,28 @@
-from pymongo import MongoClient, ASCENDING
-from pymongo.errors import ConfigurationError
+# app/db/mongo.py
+from __future__ import annotations
 
-_client = None
-_db = None
+from typing import Any, Dict, Optional
 
-def init_mongo(app):
-    global _client, _db
-    uri = app.config.get("MONGO_URI")
-    if not uri:
-        return
+from flask import current_app, g
+from pymongo import MongoClient
 
-    _client = MongoClient(uri)  # TLS handled by SRV; no need to force tls=True
 
-    # get_default_database() requires a db name in the URI; handle both cases
-    try:
-        _db = _client.get_default_database()
-    except ConfigurationError:
-        # If URI had no default DB, fall back to a named one
-        _db = _client.get_database("strokecare")
+def _get_mongo_client() -> MongoClient:
+    client: Optional[MongoClient] = g.get("mongo_client")
+    if client is None:
+        uri = current_app.config["MONGO_URI"]
+        client = MongoClient(uri, tls="mongodb+srv://" in uri)
+        g.mongo_client = client
+    return client
 
-    if _db is None:
-        return
 
-    # TTL + helpful indexes
-    _db.predictions.create_index([("ts", ASCENDING)], expireAfterSeconds=60 * 60 * 24 * 30)
-    _db.predictions.create_index([("patient_id", ASCENDING), ("ts", ASCENDING)])
-    _db.events.create_index([("ts", ASCENDING)])
+def get_patient_collection():
+    client = _get_mongo_client()
+    dbname = current_app.config.get("MONGO_DBNAME", "strokecare")
+    return client[dbname]["patients"]
 
-def mongo_db():
-    return _db
+
+def close_mongo_client() -> None:
+    client: Optional[MongoClient] = g.pop("mongo_client", None)
+    if client is not None:
+        client.close()
