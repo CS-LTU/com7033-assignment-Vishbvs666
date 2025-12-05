@@ -1,0 +1,86 @@
+{# app/templates/_partials/navbar.html #}
+
+{% if request.blueprint != 'auth' %}
+<nav class="navbar navbar-expand-lg sc-nav shadow-sm" style="background:#f7f0ff;">
+  <div class="container">
+
+    <!-- Brand -->
+    <a class="navbar-brand d-flex align-items-center" href="{{ url_for('main.index') }}">
+      <div class="sc-logo rounded-3 d-flex align-items-center justify-content-center me-2">
+        <span class="sc-logo-mark">SC</span>
+      </div>
+      <span class="sc-logo-text">StrokeCare</span>
+    </a>
+
+    <!-- Mobile toggler -->
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+            data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false"
+            aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <!-- Right side links -->
+    <div class="collapse navbar-collapse justify-content-end" id="mainNav">
+      <ul class="navbar-nav align-items-lg-center">
+
+        {% if current_user.is_authenticated %}
+
+          {# Role-aware dashboard link #}
+          {% set role = current_user.role or '' %}
+
+          {% if role == 'admin' %}
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('admin.admin_dashboard') }}">
+                Admin dashboard
+              </a>
+            </li>
+
+          {% elif role == 'doctor' %}
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('doctor.doctor_dashboard') }}">
+                Doctor dashboard
+              </a>
+            </li>
+
+          {% elif role == 'hcp' %}
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('hcp.hcp_dashboard') }}">
+                HCP dashboard
+              </a>
+            </li>
+
+          {% elif role == 'patient' %}
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('patient.patient_dashboard') }}">
+                Patient dashboard
+              </a>
+            </li>
+
+          {% else %}
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('main.index') }}">Dashboard</a>
+            </li>
+          {% endif %}
+
+          {# TOP NAVBAR LOGOUT — the one you WANT #}
+          <li class="nav-item ms-lg-3">
+            <a class="nav-link text-danger fw-semibold" href="{{ url_for('auth.logout') }}">
+              Logout
+            </a>
+          </li>
+
+        {% else %}
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('auth.login') }}">Sign in</a>
+          </li>
+
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('auth.register') }}">Register</a>
+          </li>
+        {% endif %}
+
+      </ul>
+    </div>
+  </div>
+</nav>
+{% endif %}

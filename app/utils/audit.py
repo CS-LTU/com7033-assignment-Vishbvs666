@@ -4,6 +4,8 @@ from __future__ import annotations
 from typing import Any
 
 from flask import request
+from flask_login import current_user
+
 from app.extensions import db
 from app.models import AuditLog
 
@@ -17,16 +19,23 @@ def audit(
     ip: str | None = None,
 ) -> None:
     """
-    Light-weight audit helper.
+    Lightweight audit helper.
 
-    We only write into the columns that exist on AuditLog:
-    - user_id
-    - action
-    - ip_address
+    Writes a single row into audit_logs with:
+      - user_id
+      - action (plus optional metadata)
+      - ip_address
 
     The optional resource_type / resource_id / details are folded into
-    the action text so we don't need extra DB columns right now.
+    the action text, so we don't need extra DB columns.
     """
+
+    # Fallback to current_user if user_id not explicitly passed
+    if user_id is None:
+        try:
+            user_id = getattr(current_user, "id", None)
+        except Exception:
+            user_id = None
 
     # Figure out IP if not explicitly passed
     if ip is None:
@@ -36,7 +45,7 @@ def audit(
             # Outside request context (e.g. CLI) – leave as None
             ip = None
 
-    # Build a descriptive action string with metadata
+    # Build descriptive action string with metadata
     meta_parts: list[str] = []
     if resource_type:
         meta_parts.append(f"resource_type={resource_type}")
@@ -53,7 +62,13 @@ def audit(
     entry = AuditLog()
     entry.user_id = user_id
     entry.action = full_action
-    entry.ip_address = ip
+
+    # Match your model/DB column name
+    if hasattr(entry, "ip_address"):
+        entry.ip_address = ip
 
     db.session.add(entry)
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()

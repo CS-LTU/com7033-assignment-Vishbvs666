@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Today’s tasks · StrokeCare{% endblock %}
+
+{% block content %}
+<div class="sc-admin-page">
+  <div class="container sc-admin-shell py-4">
+
+    <!-- Header -->
+    <div class="d-flex align-items-start justify-content-between mb-3">
+      <div>
+        <h1 class="sc-page-title mb-1">Today’s tasks</h1>
+        <p class="sc-page-subtitle mb-0">
+          Checklist of tasks for your current shift.
+        </p>
+      </div>
+    </div>
+
+    <div class="sc-card">
+      {% if tasks %}
+        <div class="table-responsive">
+          <table class="table align-middle mb-0 sc-table">
+            <thead>
+              <tr>
+                <th scope="col">Patient</th>
+                <th scope="col">Task</th>
+                <th scope="col">Due time</th>
+                <th scope="col">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for t in tasks %}
+                <tr>
+                  <td>{{ t.patient_name or t.patient_id }}</td>
+                  <td>{{ t.label }}</td>
+                  <td>{{ t.due_time or '—' }}</td>
+                  <td>
+                    {% if t.done %}
+                      <span class="badge bg-success">Done</span>
+                    {% else %}
+                      <span class="badge bg-secondary">Pending</span>
+                    {% endif %}
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <p class="text-muted small mb-0">
+          You have no tasks configured for today yet. This page will later use
+          MongoDB to pull daily checklists and medication reminders for your
+          assigned patients.
+        </p>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+{% endblock %}

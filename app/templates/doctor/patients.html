@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+
+{% block title %}Patients · StrokeCare{% endblock %}
+
+{% block content %}
+<div class="sc-page sc-page--doctor">
+  <div class="container py-4 sc-shell">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <div>
+        <h1 class="sc-page-title mb-1">
+          {% if risk_filter == 'high' %}
+            High risk patients
+          {% elif risk_filter == 'medium' %}
+            Medium risk patients
+          {% elif risk_filter == 'low' %}
+            Low risk patients
+          {% else %}
+            Patients
+          {% endif %}
+        </h1>
+        <p class="sc-page-subtitle mb-0">
+          View and manage patients imported from the stroke risk dataset.
+        </p>
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <span class="badge rounded-pill bg-light text-muted d-none d-md-inline">
+          Dataset import · read-only demographics
+        </span>
+      </div>
+    </div>
+
+    <!-- Filter / search -->
+    <form class="card sc-card mb-4" method="get">
+      <div class="card-body">
+        <div class="row g-3 align-items-end">
+          <div class="col-md-4">
+            <label class="form-label">Search</label>
+            <input
+              type="text"
+              class="form-control"
+              name="q"
+              value="{{ search_query or '' }}"
+              placeholder="ID, gender, work type, smoking status…">
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label">Risk filter</label>
+            <select class="form-select" name="filter">
+              <option value="all"   {% if risk_filter == 'all' %}selected{% endif %}>All</option>
+              <option value="high"  {% if risk_filter == 'high' %}selected{% endif %}>High risk</option>
+              <option value="medium"{% if risk_filter == 'medium' %}selected{% endif %}>Medium risk</option>
+              <option value="low"   {% if risk_filter == 'low' %}selected{% endif %}>Low risk</option>
+            </select>
+          </div>
+
+          <div class="col-md-4 text-md-end">
+            <button type="submit" class="btn sc-btn-primary px-4">
+              Apply filters
+            </button>
+          </div>
+        </div>
+      </div>
+    </form>
+
+    <!-- List -->
+    <div class="card sc-card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span class="fw-semibold">
+          {% if risk_filter == 'high' %}
+            High risk patient list
+          {% elif risk_filter == 'medium' %}
+            Medium risk patient list
+          {% elif risk_filter == 'low' %}
+            Low risk patient list
+          {% else %}
+            Patient list
+          {% endif %}
+        </span>
+
+        <div class="d-flex align-items-center gap-2">
+          <!-- Add patient (manual entry) -->
+          <a href="{{ url_for('doctor.doctor_new_patient') }}"
+             class="btn btn-sm btn-outline-secondary">
+            Add patient
+          </a>
+
+          <!-- Scoped CSV export using same filters/search -->
+          <a href="{{ url_for('doctor.doctor_export_patients',
+                              filter=risk_filter,
+                              q=search_query) }}"
+             class="btn sc-btn-primary btn-sm">
+            Export CSV
+          </a>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table align-middle mb-0">
+          <thead>
+            <tr>
+              <th scope="col">Patient</th>
+              <th scope="col">Risk level</th>
+              <th scope="col">Risk score</th>
+              <th scope="col" class="text-end">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for p in patients %}
+              <tr>
+                <td>
+                  <a href="{{ url_for('doctor.doctor_patient_detail', patient_id=p.id) }}"
+                     class="sc-link">
+                    {{ p.name }}
+                  </a>
+                  <div class="text-muted small">
+                    {{ p.gender or '—' }},
+                    age {{ p.age or '—' }}
+                  </div>
+                </td>
+                <td>
+                  <span class="badge rounded-pill
+                    {% if p.risk_level == 'High' %}bg-danger-subtle text-danger
+                    {% elif p.risk_level == 'Medium' %}bg-warning-subtle text-warning
+                    {% elif p.risk_level == 'Low' %}bg-success-subtle text-success
+                    {% else %}bg-light text-muted{% endif %}">
+                    {{ p.risk_level or 'Unknown' }}
+                  </span>
+                </td>
+                <td>{{ "%.2f"|format(p.risk_score or 0.0) }}</td>
+                <td class="text-end">
+                    <!-- View button (for doctor + admin) -->
+                  <a href="{{ url_for('doctor.doctor_patient_detail', patient_id=p.id) }}"
+                    class="btn btn-sm btn-outline-secondary rounded-pill me-1">
+                    View
+                  </a>
+
+                  <!-- Admin-only soft delete -->
+                  {% if current_user.role == 'admin' %}
+                    <form method="post"
+                          action="{{ url_for('doctor.patient_delete', patient_id=p.id) }}"
+                          class="d-inline">
+                      {{ csrf_token() }}
+                      <button type="submit"
+                              class="btn btn-sm btn-outline-danger rounded-pill">
+                        Delete
+                      </button>
+                    </form>
+                  {% endif %}
+                </td>
+              </tr>
+            {% else %}
+              <tr>
+                <td colspan="4" class="text-center text-muted py-4">
+                  No patients found for this filter.
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+{% endblock %}

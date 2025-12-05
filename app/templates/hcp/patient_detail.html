@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+{% block title %}Patient care view · StrokeCare{% endblock %}
+
+{% block content %}
+<div class="sc-admin-page">
+  <div class="container sc-admin-shell py-4">
+
+    <!-- Header -->
+    <div class="d-flex align-items-start justify-content-between mb-3">
+      <div>
+        <h1 class="sc-page-title mb-1">Patient care view</h1>
+        <p class="sc-page-subtitle mb-0">
+          Detailed care information for this patient, including vitals, medications, tasks, and notes.
+        </p>
+      </div>
+
+      <div class="text-end d-none d-md-block">
+        {% if patient %}
+          <small class="text-muted d-block">Patient ID</small>
+          <span class="fw-semibold">{{ patient.id }}</span>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- No patient loaded -->
+    {% if not patient %}
+      <div class="sc-card">
+        <p class="text-muted small mb-0">
+          Patient data is not loaded yet. Once MongoDB is connected, this view will display demographics,
+          vitals, medications, care notes, and task checklists for this patient.
+        </p>
+      </div>
+    {% else %}
+
+    <!-- Top Row: Patient Details + Latest Vitals + Tasks -->
+    <div class="row g-3 mb-3">
+
+      <!-- Patient details -->
+      <div class="col-md-4">
+        <div class="sc-card h-100">
+          <h2 class="sc-card-title mb-2">Patient details</h2>
+
+          <p class="mb-1"><strong>Name:</strong> {{ patient.name }}</p>
+          <p class="mb-1"><strong>Age:</strong> {{ patient.age }}</p>
+          <p class="mb-1"><strong>Sex:</strong> {{ patient.sex }}</p>
+          <p class="mb-1"><strong>Residence:</strong> {{ patient.residence or '—' }}</p>
+
+          <hr class="my-2">
+
+          <p class="small text-muted mb-0">
+            Demographics imported from Kaggle dataset / admin entries.
+          </p>
+        </div>
+      </div>
+
+      <!-- Latest Vitals -->
+      <div class="col-md-4">
+        <div class="sc-card h-100">
+          <h2 class="sc-card-title mb-2">Latest vitals</h2>
+
+          {% if vitals and vitals|length > 0 %}
+            {% set v = vitals[0] %}
+            <p class="mb-1"><strong>Blood pressure:</strong> {{ v.bp or '—' }}</p>
+            <p class="mb-1"><strong>Heart rate:</strong> {{ v.hr or '—' }}</p>
+            <p class="mb-1"><strong>Glucose:</strong> {{ v.glucose or '—' }}</p>
+            <p class="mb-1"><strong>BMI:</strong> {{ v.bmi or '—' }}</p>
+            <p class="small text-muted mb-0">Last update: {{ v.when }}</p>
+          {% else %}
+            <p class="text-muted small mb-0">No vitals recorded yet.</p>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Task checklist -->
+      <div class="col-md-4">
+        <div class="sc-card h-100">
+          <h2 class="sc-card-title mb-2">Task checklist</h2>
+
+          {% if tasks and tasks|length > 0 %}
+            <ul class="list-unstyled small mb-0">
+              {% for t in tasks %}
+                <li class="mb-1">
+                  {% if t.done %}
+                    ✔️
+                  {% else %}
+                    ☐
+                  {% endif %}
+                  {{ t.label }}
+                </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p class="text-muted small mb-0">No tasks assigned to this patient yet.</p>
+          {% endif %}
+        </div>
+      </div>
+
+    </div> <!-- End Top Row -->
+
+
+    <!-- Bottom Row: Medications + Notes -->
+    <div class="row g-3">
+
+      <!-- Medications -->
+      <div class="col-md-6">
+        <div class="sc-card h-100">
+          <h2 class="sc-card-title mb-2">Medication tracking</h2>
+
+          {% if medications and medications|length > 0 %}
+            <ul class="list-unstyled small mb-0">
+              {% for m in medications %}
+                <li class="mb-2">
+                  <strong>{{ m.name }}</strong> — {{ m.dose }}
+                  {% if m.schedule %}
+                    <span class="text-muted">({{ m.schedule }})</span>
+                  {% endif %}
+                </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p class="text-muted small mb-0">No medication records added yet.</p>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Care notes -->
+      <div class="col-md-6">
+        <div class="sc-card h-100">
+          <h2 class="sc-card-title mb-2">Care notes</h2>
+
+          {% if notes and notes|length > 0 %}
+            <div class="small">
+              {% for n in notes %}
+                <div class="mb-2">
+                  <div class="fw-semibold">{{ n.author or "HCP" }}</div>
+                  <div>{{ n.text }}</div>
+                  <div class="text-muted small">{{ n.when }}</div>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <p class="text-muted small mb-0">No care notes recorded.</p>
+          {% endif %}
+        </div>
+      </div>
+
+    </div> <!-- End Bottom Row -->
+
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block title %}Add patient · StrokeCare{% endblock %}
+
+{% block content %}
+<div class="sc-admin-page">
+  <div class="container sc-admin-shell py-4">
+
+    <div class="d-flex align-items-start justify-content-between mb-3">
+      <div>
+        <h1 class="sc-page-title mb-1">Add patient</h1>
+        <p class="sc-page-subtitle mb-0">
+          Create a new patient record under your care.
+        </p>
+      </div>
+    </div>
+
+    <div class="sc-card">
+      <form method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div class="row g-3">
+          <div class="col-md-4">
+            <label class="form-label">Name</label>
+            <input name="name" type="text" class="form-control sc-input">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Gender</label>
+            <select name="gender" class="form-select sc-input">
+              <option value="">—</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Age</label>
+            <input name="age" type="number" step="0.1" class="form-control sc-input">
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label">Work type</label>
+            <input name="work_type" type="text" class="form-control sc-input">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Residence</label>
+            <select name="residence_type" class="form-select sc-input">
+              <option value="">—</option>
+              <option value="Urban">Urban</option>
+              <option value="Rural">Rural</option>
+            </select>
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label">Avg. glucose level</label>
+            <input name="avg_glucose_level" type="number" step="0.01" class="form-control sc-input">
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label">BMI</label>
+            <input name="bmi" type="number" step="0.1" class="form-control sc-input">
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label">Smoking status</label>
+            <select name="smoking_status" class="form-select sc-input">
+              <option value="">—</option>
+              <option value="never smoked">Never smoked</option>
+              <option value="formerly smoked">Formerly smoked</option>
+              <option value="smokes">Smokes</option>
+            </select>
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label">Hypertension</label>
+            <select name="hypertension" class="form-select sc-input">
+              <option value="">—</option>
+              <option value="yes">Yes</option>
+              <option value="no">No</option>
+            </select>
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label">Heart disease</label>
+            <select name="heart_disease" class="form-select sc-input">
+              <option value="">—</option>
+              <option value="yes">Yes</option>
+              <option value="no">No</option>
+            </select>
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label">Dataset stroke flag</label>
+            <select name="dataset_stroke_flag" class="form-select sc-input">
+              <option value="">—</option>
+              <option value="No stroke recorded">No stroke recorded</option>
+              <option value="Stroke recorded">Stroke recorded</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-end mt-4">
+          <a href="{{ url_for('hcp.hcp_patients') }}" class="btn btn-outline-secondary me-2">
+            Cancel
+          </a>
+          <button type="submit" class="btn sc-btn-gradient">
+            Save patient
+          </button>
+        </div>
+      </form>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

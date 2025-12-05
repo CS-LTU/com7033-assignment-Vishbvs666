@@ -1,0 +1,92 @@
+{# app/templates/admin/user_form.html #}
+{% extends "base.html" %}
+
+{% if user %}
+  {% set page_title = "Edit user" %}
+{% else %}
+  {% set page_title = "Create user" %}
+{% endif %}
+
+{% block title %}{{ page_title }} · StrokeCare{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="mb-3">
+    <h1 class="sc-page-title mb-1">{{ page_title }}</h1>
+    <p class="sc-page-subtitle mb-0">
+      {% if user %}
+        Update details for <strong>{{ user.full_name }}</strong>.
+      {% else %}
+        Create a new StrokeCare user account.
+      {% endif %}
+    </p>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      {% if user %}
+        <form method="post" action="{{ url_for('admin.admin_edit_user', user_id=user.id) }}">
+      {% else %}
+        <form method="post" action="{{ url_for('admin.admin_create_user') }}">
+      {% endif %}
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div class="mb-3">
+          <label class="form-label">Full name</label>
+          <input type="text"
+                 name="full_name"
+                 class="form-control"
+                 value="{{ (user.full_name if user else '') }}"
+                 required>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Email</label>
+          <input type="email"
+                 name="email"
+                 class="form-control"
+                 value="{{ (user.email if user else '') }}"
+                 required>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Role</label>
+          <select name="role" class="form-select">
+            {% set current_role = user.role if user else 'doctor' %}
+            <option value="admin" {{ 'selected' if current_role == 'admin' else '' }}>Admin</option>
+            <option value="doctor" {{ 'selected' if current_role == 'doctor' else '' }}>Doctor</option>
+            <option value="hcp" {{ 'selected' if current_role == 'hcp' else '' }}>HCP</option>
+            <option value="patient" {{ 'selected' if current_role == 'patient' else '' }}>Patient</option>
+          </select>
+        </div>
+
+        <div class="form-check form-switch mb-3">
+          {% set active = user.is_active if user is not none else true %}
+          <input class="form-check-input" type="checkbox" name="is_active" id="is_active"
+                 {% if active %}checked{% endif %}>
+          <label class="form-check-label" for="is_active">Account is active</label>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">
+            {% if user %}New password (leave blank to keep existing){% else %}Initial password{% endif %}
+          </label>
+          <input type="password"
+                 name="password"
+                 class="form-control"
+                 {% if not user %}required{% endif %}>
+        </div>
+
+        <div class="d-flex justify-content-between">
+          <a href="{{ url_for('admin.admin_users') }}" class="btn btn-outline-secondary">
+            Cancel
+          </a>
+          <button type="submit" class="btn btn-gradient">
+            {% if user %}Save changes{% else %}Create user{% endif %}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

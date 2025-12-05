@@ -1,6 +1,6 @@
 # Copilot Context — StrokeCare (COM7033 Secure Software Development)
 
-Author: Vaishali (MSc DS&AI)
+Author: Vishvapriya Sangvikar (MSc DS&AI)
 Goal: Build a secure dual-database Flask app with **RBAC** (admin, doctor, healthcare, patient), clear **SSDLC** artifacts, and a modern **violet** UI.
 
 Tech: Flask • Jinja2 • WTForms • Flask-Login • SQLAlchemy (SQLite for auth) • PyMongo (MongoDB for patients) • Vanilla JS • CSS • Bootstrap

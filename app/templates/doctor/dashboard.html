@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+{% block title %}Doctor dashboard · StrokeCare{% endblock %}
+
+{% block content %}
+<div class="sc-admin-page">
+  <div class="container sc-admin-shell py-4">
+
+    <!-- Header -->
+    <div class="d-flex align-items-start justify-content-between mb-4">
+      <div>
+        <h1 class="sc-page-title mb-1">Doctor dashboard</h1>
+        <p class="sc-page-subtitle mb-0">
+          Monitor your patients and stroke risk predictions.
+        </p>
+      </div>
+      <div class="text-end d-none d-md-block">
+        <small class="text-muted d-block">Signed in as</small>
+        <span class="fw-semibold">{{ current_user.email }}</span>
+      </div>
+    </div>
+
+    <!-- KPI Row -->
+    <div class="row g-3 mb-4 sc-admin-kpi-row">
+      <div class="col-12 col-md-3">
+        <div class="sc-card sc-kpi-card h-100">
+          <div class="sc-kpi-label">My patients</div>
+          <div class="sc-kpi-value">{{ metrics.my_patients or 0 }}</div>
+          <div class="sc-kpi-subtext">Patients under your care.</div>
+        </div>
+      </div>
+
+      <div class="col-12 col-md-3">
+        <div class="sc-card sc-kpi-card h-100">
+          <div class="sc-kpi-label">High-risk patients</div>
+          <div class="sc-kpi-value">{{ metrics.high_risk_patients or 0 }}</div>
+          <div class="sc-kpi-subtext">Based on latest stroke risk score.</div>
+        </div>
+      </div>
+
+      <div class="col-12 col-md-3">
+        <div class="sc-card sc-kpi-card h-100">
+          <div class="sc-kpi-label">Predictions run</div>
+          <div class="sc-kpi-value">{{ metrics.total_predictions or 0 }}</div>
+          <div class="sc-kpi-subtext">All-time predictions.</div>
+        </div>
+      </div>
+
+      <div class="col-12 col-md-3">
+        <div class="sc-card sc-kpi-card h-100">
+          <div class="sc-kpi-label">Today’s predictions</div>
+          <div class="sc-kpi-value">{{ metrics.todays_predictions or 0 }}</div>
+          <div class="sc-kpi-subtext">Since midnight (server time).</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main row -->
+    <div class="row g-3">
+      <!-- Recent predictions -->
+      <div class="col-12 col-lg-8">
+        <div class="sc-card h-100">
+          <div class="sc-card-header d-flex justify-content-between align-items-center">
+            <h2 class="sc-card-title mb-0">Recent predictions</h2>
+          </div>
+          <div class="sc-card-body">
+            {% if recent_predictions %}
+              <div class="table-responsive">
+                <table class="table align-middle mb-0 sc-table">
+                  <thead>
+                    <tr>
+                      <th scope="col">Patient ID</th>
+                      <th scope="col">Risk level</th>
+                      <th scope="col">Date / time</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for row in recent_predictions %}
+                      <tr>
+                        <td>{{ row.patient_id or '—' }}</td>
+                        <td>{{ row.risk_level or '—' }}</td>
+                        <td class="text-muted small">
+                          {{ row.created_at or '—' }}
+                        </td>
+                      </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            {% else %}
+              <p class="text-muted mb-0 small">
+                No predictions recorded yet for your account.
+                Once you start using the prediction tool, your latest results will appear here.
+              </p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick actions -->
+      <div class="col-12 col-lg-4">
+        <div class="sc-card h-100">
+          <div class="sc-card-header d-flex justify-content-between align-items-center">
+            <h2 class="sc-card-title mb-0">Quick actions</h2>
+          </div>
+          <div class="sc-card-body">
+            <p class="text-muted small mb-3">
+              Jump straight into the tools you use most.
+            </p>
+
+            <div class="sc-quick-actions mb-3">
+
+              <!-- ADMIN-ONLY: Manage patients -->
+              {% if current_user.role == 'admin' %}
+                <a href="{{ url_for('doctor.doctor_patients') }}" class="sc-quick-link">
+                  <span class="sc-quick-link-title">Manage patients</span>
+                  <span class="sc-quick-link-text">
+                    View, edit, and archive patient records across StrokeCare.
+                  </span>
+                </a>
+              {% endif %}
+
+              <!-- Doctor & Admin: View patients -->
+              <a href="{{ url_for('doctor.doctor_patients') }}" class="sc-quick-link">
+                <span class="sc-quick-link-title">View patients</span>
+                <span class="sc-quick-link-text">See patients under your care.</span>
+              </a>
+
+              <!-- High-risk only -->
+              <a href="{{ url_for('doctor.doctor_patients', filter='high') }}" class="sc-quick-link">
+                <span class="sc-quick-link-title">View high-risk patients</span>
+                <span class="sc-quick-link-text">Filter patients with elevated risk.</span>
+              </a>
+
+              <!-- Prediction tool -->
+              <a href="{{ url_for('predict.predict') }}" class="sc-quick-link">
+                <span class="sc-quick-link-title">Run a new prediction</span>
+                <span class="sc-quick-link-text">Open the stroke prediction tool.</span>
+              </a>
+
+              <!-- Analytics -->
+              <a href="{{ url_for('doctor.doctor_analytics') }}" class="sc-quick-link">
+                <span class="sc-quick-link-title">Open doctor analytics</span>
+                <span class="sc-quick-link-text">See your usage and activity.</span>
+              </a>
+
+            </div>
+
+            <p class="mt-2 mb-0 text-muted small">
+              Some links may point to views that are still under construction.
+              If a target is not implemented yet you may see a 404,
+              but this dashboard will always load correctly.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

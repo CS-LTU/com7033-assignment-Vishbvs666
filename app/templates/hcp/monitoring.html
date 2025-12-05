@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+{% block title %}Monitoring & alerts · StrokeCare{% endblock %}
+
+{% block content %}
+<div class="sc-admin-page">
+  <div class="container sc-admin-shell py-4">
+
+    <!-- Header -->
+    <div class="d-flex align-items-start justify-content-between mb-3">
+      <div>
+        <h1 class="sc-page-title mb-1">Monitoring & alerts</h1>
+        <p class="sc-page-subtitle mb-0">
+          Trend insights, high-risk alerts, and communications with doctors.
+        </p>
+      </div>
+    </div>
+
+    <div class="row g-3">
+
+      <!-- TREND ANALYSIS + CHART -->
+      <div class="col-md-4">
+        <div class="sc-card h-100 mb-3">
+          <h2 class="sc-card-title mb-2">Trend analysis</h2>
+          {% if trend_items %}
+            <ul class="list-unstyled small mb-0">
+              {% for item in trend_items %}
+                <li class="mb-1">
+                  <strong>{{ item.patient_name }}</strong> — {{ item.summary }}
+                </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p class="text-muted small mb-0">
+              No trend data available yet. In a future version, this section will
+              visualise patterns in vitals and stroke risk scores over time.
+            </p>
+          {% endif %}
+        </div>
+
+        <!-- Line Chart Card -->
+        <div class="sc-card">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <h2 class="sc-card-title mb-0">Prediction trend</h2>
+            <span class="badge bg-light text-muted small">
+              {{ (trend_labels|length) or 0 }} points
+            </span>
+          </div>
+          <p class="text-muted small mb-2">
+            Latest stroke risk probabilities across your patients.
+          </p>
+          <canvas id="predictionTrendChart" height="150"></canvas>
+        </div>
+      </div>
+
+      <!-- ALERTS -->
+      <div class="col-md-4">
+        <div class="sc-card h-100">
+          <h2 class="sc-card-title mb-2">Alert notifications</h2>
+          {% if alerts %}
+            <ul class="list-unstyled small mb-0">
+              {% for a in alerts %}
+                <li class="mb-1">
+                  <strong>{{ a.severity or 'Alert' }}</strong> — {{ a.message }}
+                  {% if a.when %}
+                    <span class="text-muted">({{ a.when }})</span>
+                  {% endif %}
+                </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p class="text-muted small mb-0">
+              No alerts raised at the moment. Alerts will be generated when
+              patients cross defined thresholds for vitals or stroke risk.
+            </p>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- COMMUNICATIONS -->
+      <div class="col-md-4">
+        <div class="sc-card h-100">
+          <h2 class="sc-card-title mb-2">Doctor communications</h2>
+          {% if communications %}
+            <div class="small">
+              {% for c in communications %}
+                <div class="mb-2">
+                  <div class="fw-semibold">{{ c.from or 'Doctor' }}</div>
+                  <div>{{ c.message }}</div>
+                  <div class="text-muted small">
+                    {{ c.when if c.when else '' }}
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <p class="text-muted small mb-0">
+              No messages from doctors yet. This section will hold clinical
+              instructions and feedback related to your patients.
+            </p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========================= -->
+<!-- CHART.JS & TREND CHART JS -->
+<!-- ========================= -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+  // Real data coming from Flask (StrokePrediction table)
+  const trendLabels = {{ trend_labels|default([])|tojson }};
+  const trendScores = {{ trend_scores|default([])|tojson }};
+
+  const canvas = document.getElementById("predictionTrendChart");
+
+  if (canvas && trendLabels.length && trendScores.length) {
+    const ctx = canvas.getContext("2d");
+
+    new Chart(ctx, {
+      type: "line",
+      data: {
+        labels: trendLabels,
+        datasets: [{
+          label: "Stroke risk probability",
+          data: trendScores,
+          borderColor: "rgba(136, 58, 255, 1)",          // StrokeCare violet
+          backgroundColor: "rgba(136, 58, 255, 0.12)",
+          borderWidth: 3,
+          pointRadius: 4,
+          pointHoverRadius: 5,
+          tension: 0.35
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: function(ctx) {
+                const v = ctx.parsed.y;
+                return "Risk score: " + v.toFixed(2);
+              }
+            }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            max: 1,
+            grid: { color: "rgba(148, 163, 184, 0.2)" },
+            title: {
+              display: true,
+              text: "Risk Score"
+            }
+          },
+          x: {
+            grid: { display: false },
+            title: {
+              display: true,
+              text: "Date"
+            }
+          }
+        }
+      }
+    });
+  } else if (canvas) {
+    // No data yet → show a friendly message under the empty card
+    const container = canvas.parentElement;
+    canvas.style.display = "none";
+    if (container) {
+      const msg = document.createElement("p");
+      msg.className = "text-muted small mb-0";
+      msg.textContent = "No prediction data stored yet. Run some stroke checks to see the trend over time.";
+      container.appendChild(msg);
+    }
+  }
+</script>
+{% endblock %}

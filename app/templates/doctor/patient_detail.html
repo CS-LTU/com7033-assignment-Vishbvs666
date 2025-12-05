@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+
+{% block title %}Patient · StrokeCare{% endblock %}
+
+{% block content %}
+<div class="sc-page sc-page--doctor">
+  <div class="container py-4 sc-shell">
+
+    <a href="{{ url_for('doctor.doctor_patients') }}"
+       class="sc-link mb-3 d-inline-flex align-items-center">
+      ← Back to patients
+    </a>
+
+    <div class="row g-4">
+      <!-- Left: patient summary -->
+      <div class="col-lg-7">
+        <div class="card sc-card mb-3">
+          <div class="card-body">
+            <h1 class="sc-page-title mb-2">
+              {{ patient.name }}
+            </h1>
+            <p class="text-muted mb-3">
+              Read-only demographics and medical history from the imported dataset.
+            </p>
+
+            <dl class="row mb-0">
+              <dt class="col-sm-4">Gender</dt>
+              <dd class="col-sm-8">{{ patient.gender or '—' }}</dd>
+
+              <dt class="col-sm-4">Age</dt>
+              <dd class="col-sm-8">{{ patient.age or '—' }}</dd>
+
+              <dt class="col-sm-4">Work type</dt>
+              <dd class="col-sm-8">{{ patient.work_type or '—' }}</dd>
+
+              <dt class="col-sm-4">Residence</dt>
+              <dd class="col-sm-8">{{ patient.residence_type or '—' }}</dd>
+
+              <dt class="col-sm-4">Hypertension</dt>
+              <dd class="col-sm-8">
+                {% if patient.hypertension == 1 %}Yes{% elif patient.hypertension == 0 %}No{% else %}—{% endif %}
+              </dd>
+
+              <dt class="col-sm-4">Heart disease</dt>
+              <dd class="col-sm-8">
+                {% if patient.heart_disease == 1 %}Yes{% elif patient.heart_disease == 0 %}No{% else %}—{% endif %}
+              </dd>
+
+              <dt class="col-sm-4">Avg. glucose</dt>
+              <dd class="col-sm-8">
+                {{ patient.avg_glucose_level if patient.avg_glucose_level is not none else '—' }}
+              </dd>
+
+              <dt class="col-sm-4">BMI</dt>
+              <dd class="col-sm-8">
+                {{ patient.bmi if patient.bmi is not none else '—' }}
+              </dd>
+
+              <dt class="col-sm-4">Smoking status</dt>
+              <dd class="col-sm-8">{{ patient.smoking_status or '—' }}</dd>
+
+              <dt class="col-sm-4">Dataset stroke flag</dt>
+              <dd class="col-sm-8">
+                {% if patient.stroke_flag == 1 %}
+                  Stroke recorded in dataset
+                {% elif patient.stroke_flag == 0 %}
+                  No stroke recorded
+                {% else %}
+                  —
+                {% endif %}
+              </dd>
+            </dl>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: manage record (CRUD-ish) -->
+      <div class="col-lg-5">
+        <div class="card sc-card mb-3">
+          <div class="card-body">
+            <h2 class="h5 mb-3">Manage record</h2>
+
+            <!-- UPDATE risk label + score -->
+            <form method="post"
+                  action="{{ url_for('doctor.doctor_update_patient_risk', patient_id=patient.id) }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+              <div class="mb-3">
+                <label class="form-label">Risk level (from model)</label>
+                {% set current_label = patient.risk_level or 'Unknown' %}
+                <select name="risk_label" class="form-select">
+                  {% for label in ['Unknown', 'Low', 'Medium', 'High'] %}
+                    <option value="{{ label }}"
+                      {% if label == current_label %}selected{% endif %}>
+                      {{ label }}
+                    </option>
+                  {% endfor %}
+                </select>
+                <div class="form-text">
+                  In the final system this will be populated by your trained ML model.
+                  For now you can adjust it manually for demos.
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Risk score</label>
+                <input type="number"
+                       step="0.01"
+                       name="risk_score"
+                       class="form-control"
+                       value="{{ "%.2f"|format(patient.risk_score or 0.0) }}">
+                <div class="form-text">
+                  Optional numeric score from the prediction model (e.g. stroke probability).
+                </div>
+              </div>
+
+              <!-- use same gradient style as sign-in button -->
+              <button type="submit" class="btn sc-btn-primary w-100 mb-2">
+                Save risk label
+              </button>
+            </form>
+
+            <hr>
+
+            <!-- DELETE (soft) / archive -->
+            <form method="post"
+                  action="{{ url_for('doctor.doctor_soft_delete_patient', patient_id=patient.id) }}"
+                  onsubmit="return confirm('Archive this patient? They will be hidden from active lists.');">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" class="btn btn-outline-danger w-100">
+                Archive patient
+              </button>
+            </form>
+
+            <p class="small text-muted mt-2 mb-0">
+              Archiving sets <code>system_metadata.is_active = false</code> so the record is
+              hidden from the main list without being permanently deleted (soft delete
+              as per your RBAC matrix).
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

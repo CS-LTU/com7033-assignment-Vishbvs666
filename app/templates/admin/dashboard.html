@@ -1,0 +1,154 @@
+{# app/templates/admin/dashboard.html #}
+{% extends "base.html" %}
+
+{% block title %}Admin dashboard · StrokeCare{% endblock %}
+
+{% block content %}
+<div class="sc-admin-page">
+  <div class="container sc-admin-shell py-4">
+    <!-- Header -->
+    <div class="d-flex align-items-start justify-content-between mb-4">
+      <div>
+        <h1 class="sc-page-title mb-1">Admin dashboard</h1>
+        <p class="sc-page-subtitle mb-0">
+          Monitor users, sessions, and stroke prediction activity across StrokeCare.
+        </p>
+      </div>
+      <div class="text-end d-none d-md-block">
+        <small class="text-muted d-block">Signed in as</small>
+        <span class="fw-semibold">{{ current_user.full_name }}</span>
+        <span class="badge bg-primary-subtle text-primary ms-2">Admin</span>
+      </div>
+    </div>
+
+    <!-- KPI cards row 1 -->
+    <div class="row g-3 mb-3">
+      <div class="col-md-3">
+        <div class="sc-card sc-kpi-card">
+          <div class="sc-kpi-label">Total users</div>
+          <div class="sc-kpi-value">{{ metrics.total_users }}</div>
+          <div class="sc-kpi-subtext text-muted">
+            All registered StrokeCare accounts.
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="sc-card sc-kpi-card">
+          <div class="sc-kpi-label">Doctors</div>
+          <div class="sc-kpi-value">{{ metrics.doctor_count }}</div>
+          <div class="sc-kpi-subtext text-muted">
+            Accounts with doctor privileges.
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="sc-card sc-kpi-card">
+          <div class="sc-kpi-label">HCPs</div>
+          <div class="sc-kpi-value">{{ metrics.hcp_count }}</div>
+          <div class="sc-kpi-subtext text-muted">
+            Healthcare professional accounts.
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="sc-card sc-kpi-card">
+          <div class="sc-kpi-label">Patients (user)</div>
+          <div class="sc-kpi-value">{{ metrics.patient_count }}</div>
+          <div class="sc-kpi-subtext text-muted">
+            Patients with login accounts.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- KPI cards row 2 -->
+    <div class="row g-3 mb-4">
+      <div class="col-md-4">
+        <div class="sc-card sc-kpi-card">
+          <div class="sc-kpi-label">Total predictions</div>
+          <div class="sc-kpi-value">{{ metrics.total_predictions }}</div>
+          <div class="sc-kpi-subtext text-muted">
+            All stored stroke risk predictions.
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="sc-card sc-kpi-card">
+          <div class="sc-kpi-label">Predictions today</div>
+          <div class="sc-kpi-value">{{ metrics.predictions_today }}</div>
+          <div class="sc-kpi-subtext text-muted">
+            Generated in the last 24 hours (UTC).
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="sc-card sc-kpi-card sc-kpi-card-muted">
+          <div class="sc-kpi-label">Active sessions</div>
+          <div class="sc-kpi-value">{{ metrics.active_sessions }}</div>
+          <div class="sc-kpi-subtext text-muted">
+            Open login sessions tracked by the system.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Gradient quick action bar -->
+    <div class="sc-admin-quickbar mb-4">
+      <a href="{{ url_for('admin.admin_users') }}" class="sc-admin-quickpill">
+        <div class="sc-admin-quickpill-label">Manage users</div>
+        <p class="sc-admin-quickpill-text mb-0">
+          Create and update admin, doctor, HCP, and patient accounts.
+        </p>
+      </a>
+      <a href="{{ url_for('admin.admin_patients') }}" class="sc-admin-quickpill">
+        <div class="sc-admin-quickpill-label">Manage patients</div>
+        <p class="sc-admin-quickpill-text mb-0">
+          View and edit patient records from the stroke dataset.
+        </p>
+      </a>
+    </div>
+
+    <!-- Recent activity -->
+    <div class="sc-card">
+      <div class="d-flex justify-content-between align-items-center sc-card-header">
+        <div class="sc-card-title">Recent activity</div>
+        <a href="{{ url_for('admin.admin_analytics') }}" class="btn btn-sm btn-outline-secondary">
+          View analytics
+        </a>
+      </div>
+
+      {% if recent_logs %}
+        <div class="sc-activity-list">
+          {% for log in recent_logs %}
+            <div class="sc-activity-item">
+              <div>
+                <div class="sc-activity-action">{{ log.action }}</div>
+                <div class="sc-activity-meta text-muted">
+                  {{ log.details or "" }}
+                </div>
+              </div>
+              <div class="text-end">
+                <div class="sc-activity-time text-muted small">
+                  {{ log.created_at.strftime("%Y-%m-%d %H:%M") }}
+                </div>
+                <div class="small text-muted">
+                  {{ log.user_email or "system" }}
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="text-muted small mb-0">
+          No recent audit log entries.
+        </p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

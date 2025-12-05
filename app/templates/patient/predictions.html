@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}My stroke assessments · StrokeCare{% endblock %}
+
+{% block content %}
+<div class="sc-admin-page">
+  <div class="container sc-admin-shell py-4">
+
+    <!-- Header -->
+    <div class="d-flex align-items-center justify-content-between mb-4">
+      <div>
+        <h1 class="sc-page-title mb-1">My stroke assessments</h1>
+        <p class="sc-page-subtitle mb-0">
+          A history of the stroke risk assessments that have been run for you.
+        </p>
+      </div>
+      <div class="text-end d-none d-md-block">
+        <!-- Link to prediction tool (correct endpoint) -->
+        <a class="btn btn-sm sc-primary-btn" href="{{ url_for('predict.predict') }}">
+          Run new assessment
+        </a>
+      </div>
+    </div>
+
+    <!-- Assessment history card -->
+    <div class="sc-card">
+      <div class="sc-card-header">
+        <h2 class="sc-card-title mb-0">Assessment history</h2>
+      </div>
+      <div class="sc-card-body">
+        {% if predictions %}
+          <div class="table-responsive">
+            <table class="table align-middle mb-0 sc-table">
+              <thead>
+                <tr>
+                  <th scope="col">When</th>
+                  <th scope="col">Risk probability</th>
+                  <th scope="col">Risk category</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for p in predictions %}
+                  <tr>
+                    <!-- When (date + time) -->
+                    <td class="text-muted small">
+                      {{ p.created_at or "—" }}
+                    </td>
+
+                    <!-- Risk probability (from StrokePrediction.probability 0–1) -->
+                    <td>
+                      {% if p.probability is not none %}
+                        {{ "%.1f"|format(p.probability * 100) }}%
+                      {% else %}
+                        —
+                      {% endif %}
+                    </td>
+
+                    <!-- Risk level (StrokePrediction.risk_level) -->
+                    <td>
+                      {{ p.risk_level or "Unknown" }}
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <p class="mb-2">
+            No assessments found for your account yet.
+          </p>
+          <p class="text-muted mb-0">
+            Once you start using the prediction tool, each assessment will appear here
+            with its date, probability, and risk category.
+          </p>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

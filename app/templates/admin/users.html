@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}User management · StrokeCare{% endblock %}
+
+{% block content %}
+<div class="sc-admin-page">
+  <div class="container sc-admin-shell py-4">
+    <!-- Header -->
+    <div class="d-flex align-items-start justify-content-between mb-3">
+      <div>
+        <h1 class="sc-page-title mb-1">User management</h1>
+        <p class="sc-page-subtitle mb-0">
+          Create, update, and deactivate StrokeCare user accounts.
+        </p>
+      </div>
+      <div class="text-end">
+        <a href="{{ url_for('admin.admin_dashboard') }}" class="small text-muted text-decoration-none me-3">
+          Admin dashboard
+        </a>
+        <a href="{{ url_for('auth.logout') }}" class="small text-danger text-decoration-none">
+          Logout
+        </a>
+      </div>
+    </div>
+
+    <!-- Card with "Assigned-style" table -->
+    <div class="sc-card">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="sc-card-title">All users</div>
+        <a href="{{ url_for('admin.admin_create_user') }}" class="btn sc-btn-primary btn-sm">
+          + Add new user
+        </a>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table align-middle mb-0 sc-table">
+          <thead>
+            <tr>
+              <th scope="col">ID</th>
+              <th scope="col">Full name</th>
+              <th scope="col">Email</th>
+              <th scope="col">Role</th>
+              <th scope="col">Active</th>
+              <th scope="col" class="text-end">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for user in users %}
+              <tr>
+                <td class="small text-muted">{{ user.id }}</td>
+                <td class="fw-semibold">{{ user.full_name }}</td>
+                <td class="small text-muted">{{ user.email }}</td>
+                <td>
+                  <span class="badge rounded-pill bg-light text-muted border">
+                    {{ user.role|capitalize }}
+                  </span>
+                </td>
+                <td>
+                  {% if user.is_active %}
+                    <span class="badge rounded-pill bg-success-subtle text-success">Active</span>
+                  {% else %}
+                    <span class="badge rounded-pill bg-secondary-subtle text-muted">Inactive</span>
+                  {% endif %}
+                </td>
+                <td class="text-end">
+                  <a href="{{ url_for('admin.admin_edit_user', user_id=user.id) }}"
+                     class="btn btn-sm sc-pill-btn sc-pill-view">
+                    Edit
+                  </a>
+                  <form action="{{ url_for('admin.admin_delete_user', user_id=user.id) }}"
+                        method="post"
+                        class="d-inline"
+                        onsubmit="return confirm('Delete this user account?');">
+                    <button type="submit" class="btn btn-sm sc-pill-btn sc-pill-delete">
+                      Delete
+                    </button>
+                  </form>
+                </td>
+              </tr>
+            {% else %}
+              <tr>
+                <td colspan="6" class="text-center text-muted small py-4">
+                  No users found.
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

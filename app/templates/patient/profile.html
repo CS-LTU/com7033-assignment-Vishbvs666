@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}My profile · StrokeCare{% endblock %}
+
+{% block content %}
+<div class="sc-admin-page">
+  <div class="container sc-admin-shell py-4">
+
+    <div class="d-flex align-items-center justify-content-between mb-4">
+      <div>
+        <h1 class="sc-page-title mb-1">My profile</h1>
+        <p class="sc-page-subtitle mb-0">
+          Review your basic account and contact details.
+        </p>
+      </div>
+    </div>
+
+    <div class="row g-3">
+      <div class="col-12 col-lg-8">
+        <div class="sc-card">
+          <div class="sc-card-header">
+            <h2 class="sc-card-title mb-0">Account details</h2>
+          </div>
+          <div class="sc-card-body">
+            <dl class="row mb-0">
+              <dt class="col-sm-4">Name</dt>
+              <dd class="col-sm-8">
+                {{ current_user.username or "Not set" }}
+              </dd>
+
+              <dt class="col-sm-4">Email</dt>
+              <dd class="col-sm-8">
+                {{ current_user.email }}
+              </dd>
+
+              <dt class="col-sm-4">Role</dt>
+              <dd class="col-sm-8">
+                {{ current_user.role|capitalize }}
+              </dd>
+            </dl>
+            <p class="text-muted small mt-3 mb-0">
+              In a future version, this page can be extended with address, emergency contact,
+              and other health-related information stored in MongoDB.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-lg-4">
+        <div class="sc-card h-100">
+          <div class="sc-card-header">
+            <h2 class="sc-card-title mb-0">Privacy note</h2>
+          </div>
+          <div class="sc-card-body">
+            <p class="text-muted mb-0">
+              This StrokeCare demo keeps your data within a secure environment for
+              learning purposes only. For real healthcare settings, additional
+              controls such as encryption, access auditing, and retention policies
+              would be required.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

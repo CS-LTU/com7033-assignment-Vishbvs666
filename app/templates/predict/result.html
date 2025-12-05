@@ -1,0 +1,120 @@
+{# app/templates/predict/result.html #}
+{% extends "base.html" %}
+
+{% block title %}Stroke risk result · StrokeCare{% endblock %}
+
+{% block content %}
+<div class="sc-admin-page">
+  <div class="container sc-admin-shell py-4">
+
+    <div class="d-flex align-items-center justify-content-between mb-4">
+      <div>
+        <h1 class="sc-page-title mb-1">Your stroke risk result</h1>
+        <p class="sc-page-subtitle mb-0">
+          This summary is based on the information you just provided.
+        </p>
+      </div>
+      <div class="text-end d-none d-md-block">
+        <small class="text-muted">Signed in as</small><br>
+        <span class="fw-semibold">{{ current_user.email }}</span>
+      </div>
+    </div>
+
+    <div class="row g-3">
+      <div class="col-12 col-lg-6">
+        <div class="sc-card h-100">
+          <div class="sc-card-header">
+            <h2 class="sc-card-title mb-0">Risk overview</h2>
+          </div>
+          <div class="sc-card-body">
+            <p class="mb-2">
+              Your predicted stroke risk level is
+              <strong>{{ result.risk_level }}</strong>.
+            </p>
+            <p class="mb-3">
+              Estimated probability of stroke:
+              <strong>{{ "%.1f"|format(result.probability * 100) }}%</strong>
+            </p>
+
+            <p class="text-muted small mb-0">
+              This is an AI-based estimate using the Kaggle stroke dataset.
+              It is not a diagnosis. Please consult your doctor or nurse for
+              medical advice.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-lg-6">
+        <div class="sc-card h-100">
+          <div class="sc-card-header">
+            <h2 class="sc-card-title mb-0">What you entered</h2>
+          </div>
+          <div class="sc-card-body">
+            <dl class="row mb-0 small">
+              <dt class="col-6">Gender</dt>
+              <dd class="col-6 text-end">{{ features.gender }}</dd>
+
+              <dt class="col-6">Age</dt>
+              <dd class="col-6 text-end">{{ features.age }}</dd>
+
+              <dt class="col-6">Hypertension</dt>
+              <dd class="col-6 text-end">
+                {{ "Yes" if features.hypertension else "No" }}
+              </dd>
+
+              <dt class="col-6">Heart disease</dt>
+              <dd class="col-6 text-end">
+                {{ "Yes" if features.heart_disease else "No" }}
+              </dd>
+
+              <dt class="col-6">Ever married</dt>
+              <dd class="col-6 text-end">{{ features.ever_married }}</dd>
+
+              <dt class="col-6">Work type</dt>
+              <dd class="col-6 text-end">{{ features.work_type }}</dd>
+
+              <dt class="col-6">Residence type</dt>
+              <dd class="col-6 text-end">{{ features.Residence_type }}</dd>
+
+              <dt class="col-6">Avg. glucose level</dt>
+              <dd class="col-6 text-end">{{ features.avg_glucose_level }}</dd>
+
+              <dt class="col-6">BMI</dt>
+              <dd class="col-6 text-end">{{ features.bmi }}</dd>
+
+              <dt class="col-6">Smoking status</dt>
+              <dd class="col-6 text-end">{{ features.smoking_status }}</dd>
+            </dl>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="mt-4 d-flex flex-wrap gap-2">
+      <a href="{{ url_for('predict.predict') }}" class="btn btn-outline-secondary">
+        Run another check
+      </a>
+
+      {% if current_user.role == 'doctor' or current_user.role == 'admin' %}
+        <a href="{{ url_for('doctor.doctor_dashboard') }}"
+           class="btn btn-primary ms-2">
+          Back to dashboard
+        </a>
+      {% elif current_user.role == 'hcp' %}
+        <a href="{{ url_for('hcp.hcp_dashboard') }}"
+           class="btn btn-primary ms-2">
+          Back to dashboard
+        </a>
+      {% else %}
+        <a href="{{ url_for('patient.patient_dashboard') }}"
+           class="btn btn-primary ms-2">
+          Back to dashboard
+        </a>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+{% endblock %}

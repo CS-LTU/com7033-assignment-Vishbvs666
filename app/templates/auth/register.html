@@ -4,7 +4,6 @@
 {% block content %}
 <div class="auth-page-shell">
 
-  <!-- Background Orbital Layer -->
   <main class="auth-main">
     <div class="auth-orbit-layer"></div>
 
@@ -21,7 +20,8 @@
         <h1 class="auth-heading">Create your account</h1>
         <p class="auth-tagline">Join StrokeCare and manage your stroke predictions.</p>
 
-        <form method="post" action="{{ url_for('auth.register') }}" novalidate>
+        <!-- 🚨 REMOVE novalidate so browser validations work -->
+        <form method="post" action="{{ url_for('auth.register') }}">
           {{ form.hidden_tag() }}
 
           <!-- Email -->
@@ -30,6 +30,12 @@
             <div class="sc-input-group sc-input-group--text">
               {{ form.email(class="form-control", placeholder="you@hospital.nhs.uk") }}
             </div>
+
+            {% if form.email.errors %}
+              <div class="text-danger small mt-1">
+                {{ form.email.errors[0] }}
+              </div>
+            {% endif %}
           </div>
 
           <!-- Password -->
@@ -38,6 +44,12 @@
             <div class="sc-input-group sc-input-group--text">
               {{ form.password(class="form-control", placeholder="Create a strong password") }}
             </div>
+
+            {% if form.password.errors %}
+              <div class="text-danger small mt-1">
+                {{ form.password.errors[0] }}
+              </div>
+            {% endif %}
           </div>
 
           <!-- Confirm Password -->
@@ -46,6 +58,12 @@
             <div class="sc-input-group sc-input-group--text">
               {{ form.confirm_password(class="form-control", placeholder="Re-enter your password") }}
             </div>
+
+            {% if form.confirm_password.errors %}
+              <div class="text-danger small mt-1">
+                {{ form.confirm_password.errors[0] }}
+              </div>
+            {% endif %}
           </div>
 
           <!-- Role -->
@@ -54,6 +72,12 @@
             <div class="sc-input-group sc-input-group--text">
               {{ form.role(class="form-control") }}
             </div>
+
+            {% if form.role.errors %}
+              <div class="text-danger small mt-1">
+                {{ form.role.errors[0] }}
+              </div>
+            {% endif %}
           </div>
 
           <!-- Submit -->

@@ -2,5 +2,6 @@
   "CodeGPT.apiKey": "OpenAI",
   "python.analysis.extraPaths": ["."],
   "python.analysis.diagnosticMode": "workspace"
-  
+
 }
+

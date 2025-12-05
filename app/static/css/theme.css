@@ -428,3 +428,379 @@
   position: relative;
   z-index: 20;
 }
+
+/* ================= ADMIN DASHBOARD LAYOUT ================= */
+
+.sc-admin-page {
+  padding: 40px 0 56px;
+}
+
+/* Big frosted “board” container */
+.sc-admin-shell {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 28px 32px 32px;
+  border-radius: 32px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow:
+    0 32px 80px rgba(42, 18, 77, 0.18),
+    0 0 1px rgba(207, 191, 255, 0.5);
+  -webkit-backdrop-filter: blur(22px);
+  backdrop-filter: blur(22px);
+}
+
+/* Page heading */
+.sc-page-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.15rem;
+  color: #111438;
+}
+
+.sc-page-subtitle {
+  font-size: 0.95rem;
+  color: #7a7a90;
+}
+
+/* Generic card */
+.sc-card {
+  background: rgba(255, 255, 255, 0.96);
+  border-radius: 22px;
+  padding: 1.25rem 1.5rem;
+  border: 1px solid rgba(235, 235, 255, 0.9);
+  box-shadow:
+    0 18px 45px rgba(99, 71, 199, 0.16),
+    0 0 1px rgba(255, 255, 255, 0.7);
+}
+
+/* KPI cards (top row) */
+.sc-kpi-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.sc-kpi-label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #8b88aa;
+}
+
+.sc-kpi-value {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #181234;
+}
+
+.sc-kpi-subtext {
+  font-size: 0.9rem;
+  color: #8a86a5;
+}
+
+.sc-kpi-card-muted {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 245, 255, 0.9),
+    rgba(237, 227, 255, 0.9)
+  );
+  border-style: dashed;
+  border-color: rgba(200, 160, 255, 0.7);
+}
+
+/* Card headers & titles */
+.sc-card-header {
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(233, 231, 250, 0.9);
+  margin-bottom: 0.75rem;
+}
+
+.sc-card-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #2a2444;
+}
+
+/* Activity list */
+.sc-activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.sc-activity-item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  font-size: 0.9rem;
+}
+
+.sc-activity-action {
+  font-weight: 500;
+  color: #262141;
+}
+
+.sc-activity-meta {
+  font-size: 0.8rem;
+}
+
+.sc-activity-time {
+  font-size: 0.8rem;
+}
+
+/* Quick actions */
+.sc-quick-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.sc-quick-link {
+  display: block;
+  padding: 0.7rem 0.9rem;
+  border-radius: 999px;
+  text-decoration: none;
+  background: rgba(246, 243, 255, 0.9);
+  border: 1px solid transparent;
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease,
+    transform 0.16s ease,
+    box-shadow 0.18s ease;
+}
+
+.sc-quick-link:hover {
+  background: #ffffff;
+  border-color: rgba(162, 132, 255, 0.7);
+  transform: translateY(-1px);
+  box-shadow:
+    0 10px 28px rgba(116, 83, 214, 0.28),
+    0 0 1px rgba(255, 255, 255, 0.7);
+}
+
+.sc-quick-link.disabled {
+  opacity: 0.6;
+  cursor: default;
+  pointer-events: none;
+}
+
+.sc-quick-link-title {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #27203f;
+}
+
+.sc-quick-link-text {
+  display: block;
+  font-size: 0.8rem;
+  color: #8783a3;
+}
+
+/* Small screens tweaks */
+@media (max-width: 767.98px) {
+  .sc-admin-shell {
+    padding: 20px 16px 24px;
+    border-radius: 24px;
+  }
+
+  .sc-page-title {
+    font-size: 1.45rem;
+  }
+
+  .sc-card {
+    border-radius: 18px;
+  }
+}
+
+/* Crud Operation buttons */
+/* Soft pill gradient button – match login "Sign In" style */
+.sc-btn-gradient {
+  border: none;
+  border-radius: 999px;
+  padding: 0.6rem 1.8rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #ffffff;
+  background: linear-gradient(90deg, #7f5cff 0%, #f777b5 100%);
+  box-shadow: 0 10px 25px rgba(127, 92, 255, 0.35);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+}
+
+.sc-btn-gradient:hover {
+  color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 12px 28px rgba(127, 92, 255, 0.45);
+  opacity: 0.96;
+}
+
+.sc-btn-gradient:active {
+  transform: translateY(0);
+  box-shadow: 0 6px 16px rgba(127, 92, 255, 0.35);
+}
+
+/* Small alert + pills for risk badges */
+.sc-small-alert {
+  border-radius: 999px;
+  padding: 0.35rem 0.9rem;
+  font-size: 0.8rem;
+}
+
+.sc-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.sc-pill-high {
+  background: rgba(239, 68, 68, 0.08);
+  color: #b91c1c;
+}
+
+.sc-pill-medium {
+  background: rgba(245, 158, 11, 0.1);
+  color: #92400e;
+}
+
+.sc-pill-low {
+  background: rgba(34, 197, 94, 0.08);
+  color: #166534;
+}
+
+.sc-pill-unknown {
+  background: rgba(148, 163, 184, 0.16);
+  color: #475569;
+}
+
+/* StrokeCare primary gradient button – reuse the Sign In style */
+.btn.sc-btn-primary {
+  border-radius: 999px;
+  padding-inline: 1.75rem;
+  padding-block: 0.6rem;
+  background: linear-gradient(135deg, #a855f7, #ec4899);
+  color: #ffffff;
+  border: none;
+  font-weight: 600;
+  box-shadow: 0 12px 30px rgba(168, 85, 247, 0.35);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+}
+
+.btn.sc-btn-primary:hover,
+.btn.sc-btn-primary:focus {
+  opacity: 0.95;
+  transform: translateY(-1px);
+  box-shadow: 0 16px 40px rgba(168, 85, 247, 0.45);
+  color: #ffffff;
+}
+
+.btn.sc-btn-primary:active {
+  transform: translateY(0);
+  box-shadow: 0 8px 18px rgba(168, 85, 247, 0.35);
+}
+
+/* Gradient style for primary quick actions on admin dashboard */
+.sc-quick-link-primary {
+  background: linear-gradient(135deg, #ff6adf, #ff8b8b);
+  color: #ffffff;
+  box-shadow: 0 10px 25px rgba(255, 106, 223, 0.25);
+}
+
+.sc-quick-link-primary .sc-quick-link-title,
+.sc-quick-link-primary .sc-quick-link-text {
+  color: #ffffff;
+}
+
+
+/* --------------------------------------------------
+   Admin quick action gradient bar
+   (match HCP dashboard / Sign In gradient)
+-------------------------------------------------- */
+
+.sc-admin-quickbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding: 0.45rem;
+  border-radius: var(--sc-radius-pill);
+  background: linear-gradient(120deg, var(--sc-primary-dark), var(--sc-secondary));
+  box-shadow: 0 18px 40px rgba(148, 132, 180, 0.35);
+}
+
+.sc-admin-quickpill {
+  flex: 1 1 200px;
+  border-radius: var(--sc-radius-pill);
+  background: rgba(255, 255, 255, 0.16);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  padding: 0.9rem 1.4rem;
+  color: #ffffff;
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  transition:
+    background 0.15s ease,
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    opacity 0.15s ease;
+}
+
+.sc-admin-quickpill:hover {
+  background: rgba(255, 255, 255, 0.26);
+  transform: translateY(-1px);
+  box-shadow: 0 14px 32px rgba(148, 132, 180, 0.45);
+  opacity: 0.98;
+}
+
+.sc-admin-quickpill-label {
+  font-weight: 600;
+  font-size: 0.96rem;
+  letter-spacing: 0.01em;
+}
+
+.sc-admin-quickpill-text {
+  font-size: 0.8rem;
+  opacity: 0.9;
+}
+
+/* Stack nicely on small screens */
+@media (max-width: 768px) {
+  .sc-admin-quickbar {
+    border-radius: 22px;
+  }
+
+  .sc-admin-quickpill {
+    border-radius: 18px;
+  }
+}
+
+/* Predict page gradient bar + button */
+.sc-gradient-bar {
+  border-radius: 999px;
+  padding: 2px;
+  background: linear-gradient(90deg, #ff9a9e 0%, #8f7bff 50%, #6c5ce7 100%);
+  box-shadow: 0 12px 30px rgba(90, 70, 200, 0.35);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.sc-gradient-button {
+  border: none;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  padding: 0.9rem 2.5rem;
+  color: #ffffff;
+  background: transparent;
+  width: 100%;
+}
+
+.sc-gradient-button-wide {
+  width: 100%;
+}

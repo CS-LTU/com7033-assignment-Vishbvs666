@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}High-risk patients · StrokeCare{% endblock %}
+
+{% block content %}
+<div class="sc-admin-page">
+  <div class="container sc-admin-shell py-4">
+
+    <!-- Header -->
+    <div class="d-flex align-items-start justify-content-between mb-3">
+      <div>
+        <h1 class="sc-page-title mb-1">High-risk patients</h1>
+        <p class="sc-page-subtitle mb-0">
+          Patients currently flagged as high-risk under your care.
+        </p>
+      </div>
+      <div class="text-end d-none d-md-block">
+        <small class="text-muted d-block">Filter</small>
+        <span class="fw-semibold">High-risk only</span>
+      </div>
+    </div>
+
+    <div class="sc-card">
+      {% if patients %}
+        <div class="table-responsive">
+          <table class="table align-middle mb-0 sc-table">
+            <thead>
+              <tr>
+                <th>Patient</th>
+                <th>Risk level</th>
+                <th>Risk score</th>
+                <th>Last update</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for p in patients %}
+                <tr>
+                  <td>
+                    {{ p.name }}
+                    <div class="text-muted small">
+                      {{ p.sex }}, age {{ p.age }}
+                    </div>
+                  </td>
+
+                  <!-- Pretty coloured badge -->
+                  <td>
+                    {% if p.risk_level == "High" %}
+                      <span class="badge rounded-pill bg-danger-subtle text-danger-emphasis">
+                        High
+                      </span>
+                    {% elif p.risk_level == "Medium" %}
+                      <span class="badge rounded-pill bg-warning-subtle text-warning-emphasis">
+                        Medium
+                      </span>
+                    {% elif p.risk_level == "Low" %}
+                      <span class="badge rounded-pill bg-success-subtle text-success-emphasis">
+                        Low
+                      </span>
+                    {% else %}
+                      <span class="badge rounded-pill bg-secondary-subtle text-secondary-emphasis">
+                        Unknown
+                      </span>
+                    {% endif %}
+                  </td>
+
+                  <td>{{ "%.2f"|format(p.risk_score) }}</td>
+
+                  <td class="text-muted small">
+                    {{ p.last_update or "—" }}
+                  </td>
+
+                  <td class="text-end">
+                    <a href="{{ url_for('hcp.hcp_patient_detail', patient_id=p.id) }}"
+                       class="btn btn-sm btn-outline-secondary rounded-pill">
+                      View care view
+                    </a>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+      {% else %}
+        <p class="text-muted small mb-0">
+          No high-risk patients are assigned to you yet.
+        </p>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+{% endblock %}

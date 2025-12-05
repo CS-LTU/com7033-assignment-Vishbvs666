@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+{% block title %}Check your stroke risk{% endblock %}
+
+{% block content %}
+<div class="sc-admin-page">
+  <div class="container sc-admin-shell py-4">
+
+    <h2 class="mb-1 fw-bold">Check your stroke risk</h2>
+    <p class="text-muted mb-4">Enter your current health details to run a stroke risk check.</p>
+
+    <div class="card shadow-sm border-0 p-4 rounded-4">
+
+      <form method="POST" class="w-100">
+
+        <!-- CSRF token is hidden -->
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <h5 class="fw-semibold mb-3">Health details</h5>
+
+        <div class="row g-3">
+
+          <!-- Gender -->
+          <div class="col-md-4">
+            <label class="form-label">Gender</label>
+            <select name="gender" class="form-select">
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <!-- Age -->
+          <div class="col-md-4">
+            <label class="form-label">Age</label>
+            <input type="number" name="age" class="form-control" placeholder="e.g. 55" required>
+          </div>
+
+          <!-- Hypertension -->
+          <div class="col-md-4">
+            <label class="form-label">Hypertension</label>
+            <!-- values "0"/"1" but backend also understands "Yes"/"No" for tests -->
+            <select name="hypertension" class="form-select">
+              <option value="0">No</option>
+              <option value="1">Yes</option>
+            </select>
+          </div>
+
+          <!-- Heart disease -->
+          <div class="col-md-4">
+            <label class="form-label">Heart disease</label>
+            <select name="heart_disease" class="form-select">
+              <option value="0">No</option>
+              <option value="1">Yes</option>
+            </select>
+          </div>
+
+          <!-- Ever married -->
+          <div class="col-md-4">
+            <label class="form-label">Ever married</label>
+            <select name="ever_married" class="form-select">
+              <option value="No">No</option>
+              <option value="Yes">Yes</option>
+            </select>
+          </div>
+
+          <!-- Work type -->
+          <div class="col-md-4">
+            <label class="form-label">Work type</label>
+            <select name="work_type" class="form-select">
+              <option value="Private">Private</option>
+              <option value="Self-employed">Self-employed</option>
+              <option value="Govt_job">Government job</option>
+              <option value="children">Children</option>
+            </select>
+          </div>
+
+          <!-- Residence type -->
+          <div class="col-md-4">
+            <label class="form-label">Residence type</label>
+            <select name="residence_type" class="form-select">
+              <option value="Urban">Urban</option>
+              <option value="Rural">Rural</option>
+            </select>
+          </div>
+
+          <!-- Average glucose level -->
+          <div class="col-md-4">
+            <label class="form-label">Average glucose level</label>
+            <input type="number"
+                   name="avg_glucose_level"
+                   class="form-control"
+                   step="0.1"
+                   placeholder="e.g. 110.0"
+                   required>
+          </div>
+
+          <!-- BMI -->
+          <div class="col-md-4">
+            <label class="form-label">BMI</label>
+            <input type="number"
+                   name="bmi"
+                   class="form-control"
+                   step="0.1"
+                   placeholder="e.g. 26.0"
+                   required>
+          </div>
+
+          <!-- Smoking status -->
+          <div class="col-md-4">
+            <label class="form-label">Smoking status</label>
+            <select name="smoking_status" class="form-select">
+              <option value="never smoked">Never smoked</option>
+              <option value="formerly smoked">Formerly smoked</option>
+              <option value="smokes">Smokes</option>
+            </select>
+          </div>
+
+          <!-- Patient ID (doctor-only use, optional) -->
+          <div class="col-md-4">
+            <label class="form-label">Patient ID (optional)</label>
+            <input type="text"
+                   name="patient_id"
+                   class="form-control"
+                   placeholder="e.g. ABC123">
+          </div>
+
+        </div>
+
+        <!-- BUTTON (gradient pink-purple like sign-in screen) -->
+        <div class="mt-4">
+          <button type="submit"
+                  class="btn w-100 text-white py-3 fw-semibold"
+                  style="
+                    background: linear-gradient(90deg, #ff7eb3, #8e44ff);
+                    border: none;
+                    border-radius: 999px;
+                    font-size: 1.1rem;">
+            Run stroke risk check
+          </button>
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}Doctor Analytics · StrokeCare{% endblock %}
+
+{% block content %}
+<div class="sc-admin-page">
+  <div class="container sc-admin-shell py-4">
+
+    <!-- Header -->
+    <div class="d-flex align-items-center justify-content-between mb-4">
+      <div>
+        <h1 class="sc-page-title mb-1">Analytics & activity</h1>
+        <p class="sc-page-subtitle mb-0">
+          Your stroke prediction usage and risk distribution.
+        </p>
+      </div>
+      <div class="text-end d-none d-md-block">
+        <small class="text-muted">Signed in as</small><br>
+        <span class="fw-semibold">{{ current_user.email }}</span>
+      </div>
+    </div>
+
+    <!-- KPI row -->
+    <div class="row g-3 mb-4 sc-admin-kpi-row">
+      <div class="col-12 col-md-4">
+        <div class="sc-card sc-kpi-card">
+          <div class="sc-kpi-label">Total predictions</div>
+          <div class="sc-kpi-value">{{ metrics.total_predictions or 0 }}</div>
+          <div class="sc-kpi-subtext">
+            Predictions you have triggered in StrokeCare.
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-md-4">
+        <div class="sc-card sc-kpi-card">
+          <div class="sc-kpi-label">High-risk predictions</div>
+          <div class="sc-kpi-value">{{ metrics.high_risk_predictions or 0 }}</div>
+          <div class="sc-kpi-subtext">
+            Number of predictions above the risk threshold.
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-md-4">
+        <div class="sc-card sc-kpi-card sc-kpi-card-muted">
+          <div class="sc-kpi-label">Patients with predictions</div>
+          <div class="sc-kpi-value">{{ metrics.patients_with_predictions or 0 }}</div>
+          <div class="sc-kpi-subtext">
+            Unique patients with at least one risk prediction.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main row -->
+    <div class="row g-3">
+      <div class="col-12 col-lg-8">
+        <div class="sc-card h-100">
+          <div class="sc-card-header">
+            <h2 class="sc-card-title mb-0">Recent predictions</h2>
+          </div>
+          <div class="sc-card-body">
+            {% if recent_predictions %}
+              <div class="table-responsive">
+                <table class="table align-middle mb-0 sc-table">
+                  <thead>
+                    <tr>
+                      <th scope="col">Prediction ID</th>
+                      <th scope="col">Created at</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for p in recent_predictions %}
+                      <tr>
+                        <td>#{{ p.id }}</td>
+                        <td class="text-muted small">
+                          {% if p.created_at %}
+                            {{ p.created_at.strftime("%Y-%m-%d %H:%M") }}
+                          {% else %}
+                            —
+                          {% endif %}
+                        </td>
+                      </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            {% else %}
+              <p class="text-muted mb-0">
+                No predictions recorded yet. Once you start using the stroke prediction tool,
+                your latest runs will appear here.
+              </p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-lg-4">
+        <div class="sc-card h-100">
+          <div class="sc-card-header">
+            <h2 class="sc-card-title mb-0">Summary</h2>
+          </div>
+          <div class="sc-card-body">
+            <p class="text-muted mb-2">
+              This page gives you a personal snapshot of how you are using the StrokeCare
+              prediction tool for your patients.
+            </p>
+            <p class="text-muted small mb-0">
+              In a future version, this view can be extended with trend charts, risk
+              distributions and explainability metrics to support deeper clinical analysis.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

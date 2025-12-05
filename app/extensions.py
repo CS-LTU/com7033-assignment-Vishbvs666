@@ -1,6 +1,7 @@
+# app/extensions.py
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
-from flask_wtf.csrf import CSRFProtect
+from flask_wtf import CSRFProtect   # this import path is fine
 
 db = SQLAlchemy()
 login_manager = LoginManager()

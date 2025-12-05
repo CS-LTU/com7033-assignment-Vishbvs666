@@ -1,0 +1,177 @@
+{# app/templates/patient/dashboard.html #}
+{% extends "base.html" %}
+
+{% block title %}Patient dashboard · StrokeCare{% endblock %}
+
+{% block content %}
+<div class="sc-admin-page">
+  <div class="container sc-admin-shell py-4">
+
+    <!-- Header -->
+    <div class="d-flex align-items-center justify-content-between mb-4">
+      <div>
+        <h1 class="sc-page-title mb-1">Patient dashboard</h1>
+        <p class="sc-page-subtitle mb-0">
+          See your health summary and latest stroke risk assessment.
+        </p>
+      </div>
+      <div class="text-end d-none d-md-block">
+        <small class="text-muted">Signed in as</small><br>
+        <span class="fw-semibold">{{ current_user.email }}</span>
+      </div>
+    </div>
+
+    <!-- KPI row -->
+    <div class="row g-3 mb-4 sc-admin-kpi-row">
+      <!-- KPI 1 -->
+      <div class="col-12 col-md-3">
+        <div class="sc-card sc-kpi-card">
+          <div class="sc-kpi-label">My stroke risk</div>
+          <div class="sc-kpi-value">
+            {{ metrics.last_bucket or "Not assessed" }}
+          </div>
+          <div class="sc-kpi-subtext">
+            Based on your most recent prediction.
+          </div>
+        </div>
+      </div>
+
+      <!-- KPI 2 -->
+      <div class="col-12 col-md-3">
+        <div class="sc-card sc-kpi-card">
+          <div class="sc-kpi-label">Predictions run</div>
+          <div class="sc-kpi-value">
+            {{ metrics.total_predictions or 0 }}
+          </div>
+          <div class="sc-kpi-subtext">
+            Times your stroke risk has been calculated.
+          </div>
+        </div>
+      </div>
+
+      <!-- KPI 3 -->
+      <div class="col-12 col-md-3">
+        <div class="sc-card sc-kpi-card">
+          <div class="sc-kpi-label">Last update</div>
+          <div class="sc-kpi-value" style="font-size: 1.1rem;">
+            {% if metrics.last_time %}
+              {{ metrics.last_time.strftime("%Y-%m-%d") }}
+            {% else %}
+              —
+            {% endif %}
+          </div>
+          <div class="sc-kpi-subtext">
+            Date of your latest prediction.
+          </div>
+        </div>
+      </div>
+
+      <!-- KPI 4 -->
+      <div class="col-12 col-md-3">
+        <div class="sc-card sc-kpi-card sc-kpi-card-muted">
+          <div class="sc-kpi-label">Profile & records</div>
+          <div class="sc-kpi-value">Overview</div>
+          <div class="sc-kpi-subtext">
+            View your basic details and records.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main row -->
+    <div class="row g-3">
+
+      <!-- Left column -->
+      <div class="col-12 col-lg-8">
+        <div class="sc-card h-100">
+          <div class="sc-card-header d-flex justify-content-between align-items-center">
+            <h2 class="sc-card-title mb-0">My latest stroke risk</h2>
+          </div>
+
+          <div class="sc-card-body">
+            {% if last_prediction %}
+              <p class="mb-2">
+                Your most recent stroke risk assessment is
+                <strong>{{ metrics.last_bucket }}</strong>
+                {% if metrics.last_score is not none %}
+                  (score: {{ "%.2f"|format(metrics.last_score) }}).
+                {% endif %}
+              </p>
+
+              <p class="text-muted small mb-3">
+                Run date:
+                {% if metrics.last_time %}
+                  {{ metrics.last_time.strftime("%Y-%m-%d %H:%M") }}
+                {% else %}
+                  Unknown
+                {% endif %}
+              </p>
+
+              <p class="text-muted small mb-0">
+                This tool is a support aid only. Always speak to your doctor or nurse
+                if you have questions or concerns about your health.
+              </p>
+            {% else %}
+              <p class="text-muted mb-0">
+                You haven’t run a stroke risk check yet. Once a prediction has been
+                calculated for you, your latest result will appear here.
+              </p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Right column: Quick actions -->
+      <div class="col-12 col-lg-4">
+        <div class="sc-card h-100">
+          <div class="sc-card-header">
+            <h2 class="sc-card-title mb-0">Quick actions</h2>
+          </div>
+
+          <div class="sc-card-body">
+            <p class="text-muted small mb-3">
+              Jump straight to the areas you’ll use most often.
+            </p>
+
+            <div class="sc-quick-actions">
+
+              <a class="sc-quick-link" href="{{ url_for('patient.patient_profile') }}">
+                <span class="sc-quick-link-title">View my profile</span>
+                <span class="sc-quick-link-text">Check your basic details.</span>
+              </a>
+
+              <a class="sc-quick-link" href="{{ url_for('patient.patient_predictions') }}">
+                <span class="sc-quick-link-title">View prediction history</span>
+                <span class="sc-quick-link-text">
+                  See all previous stroke risk checks.
+                </span>
+              </a>
+
+              <a class="sc-quick-link" href="{{ url_for('patient.patient_education') }}">
+                <span class="sc-quick-link-title">Learn about stroke risk</span>
+                <span class="sc-quick-link-text">
+                  Read tips and educational content.
+                </span>
+              </a>
+
+              <a class="sc-quick-link" href="{{ url_for('predict.predict') }}">
+                <span class="sc-quick-link-title">Check stroke risk</span>
+                <span class="sc-quick-link-text">
+                  Start a new stroke risk check now.
+                </span>
+              </a>
+
+            </div>
+
+            <p class="text-muted small mt-3 mb-0">
+              Some tools may be disabled depending on how your care team configures StrokeCare.
+            </p>
+
+          </div>
+        </div>
+      </div>
+
+    </div> <!-- row -->
+  </div> <!-- container -->
+</div> <!-- sc-admin-page -->
+{% endblock %}

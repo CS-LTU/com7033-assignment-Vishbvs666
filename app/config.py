@@ -23,3 +23,12 @@ class Config:
 
     # Rate limiting (you can tweak later)
     RATELIMIT_DEFAULT = "60 per minute"
+
+    # MongoDB config for patient records
+    # You can override these with real values via environment variables if you want.
+    MONGO_URI = os.environ.get("MONGO_URI", "mongodb://localhost:27017/strokecare")
+    MONGO_DB_NAME = os.environ.get("MONGO_DB_NAME", "strokecare")
+    MONGO_PATIENTS_COLLECTION = os.environ.get(
+        "MONGO_PATIENTS_COLLECTION",
+        "patients",
+    )

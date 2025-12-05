@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+
+{% if patient %}
+  {% set page_title = "Edit patient" %}
+{% else %}
+  {% set page_title = "Add patient" %}
+{% endif %}
+
+{% block title %}{{ page_title }} · StrokeCare{% endblock %}
+
+{% block content %}
+<div class="sc-admin-page">
+  <div class="container sc-admin-shell py-4">
+    <!-- Header -->
+    <div class="d-flex align-items-start justify-content-between mb-3">
+      <div>
+        <h1 class="sc-page-title mb-1">{{ page_title }}</h1>
+        <p class="sc-page-subtitle mb-0">
+          {% if patient %}
+            Update an existing patient record from the stroke dataset.
+          {% else %}
+            Create a new patient record using fields from the stroke dataset.
+          {% endif %}
+        </p>
+      </div>
+      <div class="text-end">
+        <a href="{{ url_for('admin.admin_patients') }}" class="small text-muted text-decoration-none me-3">
+          Back to patients
+        </a>
+        <a href="{{ url_for('auth.logout') }}" class="small text-danger text-decoration-none">
+          Logout
+        </a>
+      </div>
+    </div>
+
+    <!-- Form card -->
+    <div class="sc-card">
+      <form method="post" novalidate>
+        <!-- Basic identity row -->
+        <div class="row g-3 mb-3">
+          <div class="col-md-4">
+            <label class="form-label">Patient ID (optional)</label>
+            <input
+              type="text"
+              name="patient_id"
+              class="form-control"
+              value="{{ patient.patient_id if patient else '' }}"
+            >
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Name</label>
+            <input
+              type="text"
+              name="name"
+              class="form-control"
+              value="{{ patient.name if patient else '' }}"
+            >
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Gender</label>
+            <select name="gender" class="form-select">
+              {% set g = patient.gender if patient else '' %}
+              <option value="">—</option>
+              <option value="Male"   {{ 'selected' if g == 'Male'   else '' }}>Male</option>
+              <option value="Female" {{ 'selected' if g == 'Female' else '' }}>Female</option>
+              <option value="Other"  {{ 'selected' if g == 'Other'  else '' }}>Other</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Demographics row -->
+        <div class="row g-3 mb-3">
+          <div class="col-md-4">
+            <label class="form-label">Age</label>
+            <input
+              type="number"
+              step="0.1"
+              name="age"
+              class="form-control"
+              value="{{ patient.age if patient and patient.age is not none else '' }}"
+            >
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Work type</label>
+            <input
+              type="text"
+              name="work_type"
+              class="form-control"
+              value="{{ patient.work_type if patient else '' }}"
+            >
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Residence type</label>
+            <input
+              type="text"
+              name="residence_type"
+              class="form-control"
+              value="{{ patient.residence_type if patient else '' }}"
+            >
+          </div>
+        </div>
+
+        <!-- Clinical row -->
+        <div class="row g-3 mb-3">
+          <div class="col-md-4">
+            <label class="form-label">Avg. glucose level</label>
+            <input
+              type="number"
+              step="0.01"
+              name="avg_glucose_level"
+              class="form-control"
+              value="{{ patient.avg_glucose_level if patient and patient.avg_glucose_level is not none else '' }}"
+            >
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">BMI</label>
+            <input
+              type="number"
+              step="0.1"
+              name="bmi"
+              class="form-control"
+              value="{{ patient.bmi if patient and patient.bmi is not none else '' }}"
+            >
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Smoking status</label>
+            <input
+              type="text"
+              name="smoking_status"
+              class="form-control"
+              value="{{ patient.smoking_status if patient else '' }}"
+            >
+          </div>
+        </div>
+
+        <!-- Flags row -->
+        <div class="row g-3 mb-4">
+          <div class="col-md-4">
+            <label class="form-label">Hypertension</label>
+            <select name="hypertension" class="form-select">
+              {% set h = patient.hypertension if patient is not none else 0 %}
+              <option value="0" {{ 'selected' if h == 0 else '' }}>No</option>
+              <option value="1" {{ 'selected' if h == 1 else '' }}>Yes</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Ever married</label>
+            <input
+              type="text"
+              name="ever_married"
+              class="form-control"
+              value="{{ patient.ever_married if patient else '' }}"
+            >
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Dataset stroke flag</label>
+            <select name="stroke" class="form-select">
+              {% set s = patient.stroke if patient is not none else 0 %}
+              <option value="0" {{ 'selected' if s == 0 else '' }}>No stroke</option>
+              <option value="1" {{ 'selected' if s == 1 else '' }}>Stroke</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center">
+          <a href="{{ url_for('admin.admin_patients') }}" class="btn btn-outline-secondary">
+            Cancel
+          </a>
+          <button type="submit" class="btn sc-btn-primary">
+            {% if patient %}Save changes{% else %}Save patient{% endif %}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

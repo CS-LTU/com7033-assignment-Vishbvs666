@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+{% block title %}HCP dashboard · StrokeCare{% endblock %}
+
+{% block content %}
+<div class="sc-admin-page">
+  <div class="container sc-admin-shell py-4">
+
+    <!-- Header -->
+    <div class="d-flex align-items-start justify-content-between mb-4">
+      <div>
+        <h1 class="sc-page-title mb-1">HCP dashboard</h1>
+        <p class="sc-page-subtitle mb-0">
+          Support patient care, tasks, and monitoring at a glance.
+        </p>
+      </div>
+      <div class="text-end d-none d-md-block">
+        <small class="text-muted d-block">Signed in as</small>
+        <span class="fw-semibold">{{ current_user.email }}</span>
+      </div>
+    </div>
+
+    <!-- KPI Row -->
+    <div class="row g-3 mb-4 sc-admin-kpi-row">
+      <div class="col-12 col-md-3">
+        <div class="sc-card sc-kpi-card h-100">
+          <div class="sc-kpi-label">Assigned patients</div>
+          <div class="sc-kpi-value">{{ metrics.assigned_patients or 0 }}</div>
+          <div class="sc-kpi-subtext">
+            Patients linked to your care.
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-md-3">
+        <div class="sc-card sc-kpi-card h-100">
+          <div class="sc-kpi-label">High-risk patients</div>
+          <div class="sc-kpi-value">{{ metrics.high_risk_patients or 0 }}</div>
+          <div class="sc-kpi-subtext">
+            Based on latest stroke risk flags.
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-md-3">
+        <div class="sc-card sc-kpi-card h-100">
+          <div class="sc-kpi-label">Tasks for today</div>
+          <div class="sc-kpi-value">{{ metrics.tasks_today or 0 }}</div>
+          <div class="sc-kpi-subtext">
+            Items scheduled for this shift.
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-md-3">
+        <div class="sc-card sc-kpi-card h-100 sc-kpi-card-muted">
+          <div class="sc-kpi-label">Notes to review</div>
+          <div class="sc-kpi-value">{{ metrics.notes_to_review or 0 }}</div>
+          <div class="sc-kpi-subtext">
+            Care notes awaiting doctor review.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main row -->
+    <div class="row g-3">
+      <!-- Recent updates -->
+      <div class="col-12 col-lg-8">
+        <div class="sc-card h-100">
+          <div class="sc-card-header d-flex justify-content-between align-items-center">
+            <h2 class="sc-card-title mb-0">Recent patient updates</h2>
+          </div>
+          <div class="sc-card-body">
+            {% if recent_updates %}
+              <div class="sc-activity-list">
+                {% for item in recent_updates %}
+                  <div class="sc-activity-item">
+                    <div>
+                      <div class="sc-activity-action">
+                        {{ item.summary }}
+                      </div>
+                      <div class="sc-activity-meta text-muted small">
+                        {% if item.patient_name %}{{ item.patient_name }} · {% endif %}
+                        {% if item.when %}
+                          {{ item.when }}
+                        {% else %}
+                          Just now
+                        {% endif %}
+                      </div>
+                    </div>
+                  </div>
+                {% endfor %}
+              </div>
+            {% else %}
+              <p class="text-muted small mb-0">
+                No patient updates recorded yet. Once you begin entering vitals,
+                notes, and tasks, the latest changes will appear here.
+              </p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick actions -->
+      <div class="col-12 col-lg-4">
+        <div class="sc-card h-100">
+          <div class="sc-card-header d-flex justify-content-between align-items-center">
+            <h2 class="sc-card-title mb-0">Quick actions</h2>
+          </div>
+          <div class="sc-card-body">
+            <p class="text-muted small mb-3">
+              Jump quickly to the areas you manage most often.
+            </p>
+
+            <div class="sc-quick-actions mb-3">
+              <a href="{{ url_for('hcp.hcp_patients') }}" class="sc-quick-link">
+                <span class="sc-quick-link-title">View assigned patients</span>
+                <span class="sc-quick-link-text">
+                  Browse all patients under your care.
+                </span>
+              </a>
+
+              <a href="{{ url_for('hcp.hcp_patients_high') }}" class="sc-quick-link">
+                <span class="sc-quick-link-title">View high-risk patients</span>
+                <span class="sc-quick-link-text">
+                Focus on patients with elevated stroke risk.
+                </span>
+              </a>
+
+
+              <a href="{{ url_for('hcp.hcp_tasks') }}" class="sc-quick-link">
+                <span class="sc-quick-link-title">Open today’s tasks</span>
+                <span class="sc-quick-link-text">
+                  See your checklist for the current shift.
+                </span>
+              </a>
+
+              <a href="{{ url_for('hcp.hcp_monitoring') }}" class="sc-quick-link">
+                <span class="sc-quick-link-title">Monitoring & alerts</span>
+                <span class="sc-quick-link-text">
+                  View trends, alerts, and doctor messages.
+                </span>
+              </a>
+            </div>
+
+            <p class="mt-2 mb-0 text-muted small">
+              Some views may still be in a basic or placeholder state while
+              the underlying MongoDB collections and ML outputs are wired in.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

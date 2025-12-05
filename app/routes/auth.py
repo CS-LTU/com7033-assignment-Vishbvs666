@@ -1,11 +1,28 @@
+# app/routes/auth.py
 from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_user, logout_user, login_required, current_user
+from werkzeug.routing import BuildError
 
 from app.extensions import db
 from app.forms import LoginForm, RegistrationForm, ResetPasswordForm
 from app.models.user import User
+from app.utils.audit import audit
+
 
 bp = Blueprint("auth", __name__, url_prefix="/auth")
+
+
+def _dashboard_url() -> str:
+    """
+    Decide where to send the user after login / if already logged in.
+
+    1. Try main.index (it will route by role, e.g. admin -> admin dashboard)
+    2. Fallback to auth.login so we never crash.
+    """
+    try:
+        return url_for("main.index")
+    except BuildError:
+        return url_for("auth.login")
 
 
 # -----------------------------
@@ -13,9 +30,9 @@ bp = Blueprint("auth", __name__, url_prefix="/auth")
 # -----------------------------
 @bp.route("/login", methods=["GET", "POST"])
 def login():
-    # already logged in → go to main dashboard
+    # already logged in → go to dashboard
     if current_user.is_authenticated:
-        return redirect(url_for("main.index"))
+        return redirect(_dashboard_url())
 
     form = LoginForm()
 
@@ -25,9 +42,20 @@ def login():
 
         if user and user.check_password(form.password.data):
             login_user(user, remember=form.remember_me.data)
-            flash("Welcome back!", "success")
-            return redirect(url_for("main.index"))
 
+            # ✅ Audit successful login
+            audit(
+                user_id=user.id,
+                action="user_login",
+                resource_type="auth",
+                resource_id=user.id,
+                details="User logged in via email/password",
+            )
+
+            flash("Welcome back!", "success")
+            return redirect(_dashboard_url())
+
+        # (optional) you *could* also audit failed attempts, but not required
         flash("Invalid email or password.", "danger")
 
     return render_template("auth/login.html", form=form)
@@ -39,6 +67,15 @@ def login():
 @bp.route("/logout")
 @login_required
 def logout():
+    # ✅ Audit logout BEFORE clearing current_user
+    audit(
+        user_id=getattr(current_user, "id", None),
+        action="user_logout",
+        resource_type="auth",
+        resource_id=getattr(current_user, "id", None),
+        details="User logged out",
+    )
+
     logout_user()
     flash("You have been signed out.", "info")
     return redirect(url_for("auth.login"))
@@ -51,7 +88,7 @@ def logout():
 def register():
     # if already logged in, no need to see register page
     if current_user.is_authenticated:
-        return redirect(url_for("main.index"))
+        return redirect(_dashboard_url())
 
     form = RegistrationForm()
 
