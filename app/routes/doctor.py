@@ -1,9 +1,25 @@
+'''
+===========================================================
+StrokeCare Web Application — Secure Software Development
+Author: Vishvapriya Sangvikar
+
+Course: COM7033 – MSc Data Science & Artificial Intelligence
+Student ID: 2415083
+Institution: Leeds Trinity University
+Assessment: Assessment 1 – Software Artefact (70%)
+AI Statement: Portions of this file were drafted or refined using
+    generative AI for planning and editing only,
+    as permitted in the module brief.
+===========================================================
+'''
+
 # app/routes/doctor.py
 from __future__ import annotations
 
 from datetime import datetime
 from io import StringIO
 import csv
+import json  # NEW: for parsing JSON payloads if needed
 
 from flask import (
     Blueprint,
@@ -89,7 +105,7 @@ def doctor_dashboard():
     # ---------------------------
     total_predictions = 0
     todays_predictions = 0
-    recent_predictions: list[StrokePrediction] = []
+    recent_predictions_raw: list[StrokePrediction] = []
 
     try:
         if hasattr(StrokePrediction, "user_id"):
@@ -104,14 +120,14 @@ def doctor_dashboard():
                 q.filter(StrokePrediction.created_at >= today_start).count()
             )
 
-            recent_predictions = (
+            recent_predictions_raw = (
                 q.order_by(StrokePrediction.created_at.desc())
                 .limit(5)
                 .all()
             )
         else:
             total_predictions = StrokePrediction.query.count()
-            recent_predictions = (
+            recent_predictions_raw = (
                 StrokePrediction.query
                 .order_by(StrokePrediction.created_at.desc())
                 .limit(5)
@@ -120,7 +136,36 @@ def doctor_dashboard():
     except Exception:
         total_predictions = 0
         todays_predictions = 0
-        recent_predictions = []
+        recent_predictions_raw = []
+
+    # ---------------------------
+    # Build simple rows for the template
+    # ---------------------------
+    recent_predictions: list[dict] = []
+
+    for p in recent_predictions_raw:
+        # raw_features is a JSON dict – may or may not contain patient_id
+        try:
+            features = p.raw_features or {}
+        except Exception:
+            features = {}
+
+        patient_id = None
+        if isinstance(features, dict):
+            # try a few sensible keys
+            patient_id = (
+                features.get("patient_id")
+                or features.get("original_id")
+                or features.get("id")
+            )
+
+        recent_predictions.append(
+            {
+                "patient_id": patient_id,
+                "risk_level": getattr(p, "risk_level", None),
+                "created_at": getattr(p, "created_at", None),
+            }
+        )
 
     metrics = {
         "my_patients": my_patients_count,
@@ -134,7 +179,6 @@ def doctor_dashboard():
         metrics=metrics,
         recent_predictions=recent_predictions,
     )
-
 
 # --------------------------------------------------------------------
 # Helper to build Mongo filter from querystring (re-used by list + CSV)

@@ -22,7 +22,7 @@
 
     <div class="sc-card sc-card-lg">
       <form method="post" action="{{ url_for('predict.predict') }}">
-        <!-- ✅ CSRF token is hidden; there is NO bare {{ csrf_token() }} anywhere -->
+        <!-- CSRF token is hidden; there is NO bare {{ csrf_token() }} anywhere -->
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 
         <h2 class="h6 mb-3 text-muted">Health details</h2>

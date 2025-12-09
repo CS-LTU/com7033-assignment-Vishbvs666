@@ -1,7 +1,10 @@
 {
   "CodeGPT.apiKey": "OpenAI",
-  "python.analysis.extraPaths": ["."],
-  "python.analysis.diagnosticMode": "workspace"
-
+  "python.analysis.extraPaths": [""],
+  "python.analysis.diagnosticMode": "workspace",
+  "python.analysis.typeCheckingMode": "off",
+  "python.analysis.diagnosticSeverityOverrides": {
+    "reportArgumentType": "none",
+    "reportIndexIssue": "none"
+  }
 }
-

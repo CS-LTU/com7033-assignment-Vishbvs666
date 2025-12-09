@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+{% block title %}Analytics & model insights · StrokeCare{% endblock %}
+
+{% block content %}
+<div class="sc-admin-page">
+  <div class="container sc-admin-shell py-4">
+
+    <!-- Header -->
+    <div class="d-flex align-items-start justify-content-between mb-3">
+      <div>
+        <h1 class="sc-page-title mb-1">Analytics & model insights</h1>
+        <p class="sc-page-subtitle mb-0">
+          Usage trends and risk patterns across StrokeCare.
+        </p>
+      </div>
+    </div>
+
+    <!-- Charts row -->
+    <div class="row g-3">
+
+      <!-- Predictions over time -->
+      <div class="col-lg-8">
+        <div class="sc-card h-100">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <div>
+              <h2 class="sc-card-title mb-1">Predictions over last 14 days</h2>
+              <p class="text-muted small mb-0">
+                Daily count of stroke risk checks run by any role.
+              </p>
+            </div>
+          </div>
+
+          <div style="height:260px;">
+            <canvas id="predictionsOverTimeChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Risk level distribution -->
+      <div class="col-lg-4">
+        <div class="sc-card h-100">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <div>
+              <h2 class="sc-card-title mb-1">Risk level distribution</h2>
+              <p class="text-muted small mb-0">
+                Breakdown of all stored predictions.
+              </p>
+            </div>
+            <span class="text-muted small">
+              {{ total_predictions or 0 }} predictions
+            </span>
+          </div>
+
+          {% if total_predictions %}
+            <div style="height:220px;">
+              <canvas id="riskDistributionAdminChart"></canvas>
+            </div>
+          {% else %}
+            <p class="text-muted small mb-0">
+              No predictions logged yet. Once users start running stroke checks,
+              the distribution will be shown here.
+            </p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Users by role + help text -->
+    <div class="row g-3 mt-3">
+      <div class="col-lg-6">
+        <div class="sc-card h-100">
+          <h2 class="sc-card-title mb-1">User accounts by role</h2>
+          <p class="text-muted small mb-0">
+            Current split of admin, doctor, HCP, and patient accounts.
+          </p>
+          <div style="height:220px;" class="mt-2">
+            <canvas id="usersByRoleChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-6">
+        <div class="sc-card h-100">
+          <h2 class="sc-card-title mb-1">How to interpret this page</h2>
+          <ul class="small text-muted mb-0">
+            <li>Use the <strong>Predictions over time</strong> chart to show usage growth in your report.</li>
+            <li><strong>Risk distribution</strong> helps explain how many predictions land in each band.</li>
+            <li><strong>User accounts by role</strong> supports your RBAC diagram (how many admins vs HCPs etc.).</li>
+            <li>Combine these charts with the <strong>Admin dashboard</strong> metrics (total users, predictions today) for your final write-up.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Charts -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  // Data injected from Flask
+  const dailyLabels = {{ daily_labels|tojson }};
+  const dailyValues = {{ daily_values|tojson }};
+
+  const riskLabels = {{ risk_labels|tojson }};
+  const riskValues = {{ risk_values|tojson }};
+  const totalPredictions = {{ total_predictions or 0 }};
+
+  const userRoleLabels = {{ user_role_labels|tojson }};
+  const userRoleValues = {{ user_role_values|tojson }};
+
+  // Predictions over time (line)
+  const ctxPred = document.getElementById("predictionsOverTimeChart");
+  if (ctxPred && dailyLabels.length) {
+    new Chart(ctxPred.getContext("2d"), {
+      type: "line",
+      data: {
+        labels: dailyLabels,
+        datasets: [{
+          label: "Predictions per day",
+          data: dailyValues,
+          borderWidth: 2,
+          tension: 0.3,
+          fill: false,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: { precision: 0 }
+          }
+        }
+      }
+    });
+  }
+
+  // Risk distribution (doughnut)
+  const ctxRisk = document.getElementById("riskDistributionAdminChart");
+  if (ctxRisk && totalPredictions > 0) {
+    new Chart(ctxRisk.getContext("2d"), {
+      type: "doughnut",
+      data: {
+        labels: riskLabels,
+        datasets: [{
+          data: riskValues,
+          borderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { position: "bottom" } },
+        cutout: "60%"
+      }
+    });
+  }
+
+  // Users by role (bar)
+  const ctxUsers = document.getElementById("usersByRoleChart");
+  if (ctxUsers && userRoleLabels.length) {
+    new Chart(ctxUsers.getContext("2d"), {
+      type: "bar",
+      data: {
+        labels: userRoleLabels,
+        datasets: [{
+          label: "Accounts",
+          data: userRoleValues,
+          borderWidth: 1.5,
+          borderRadius: 14
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true, ticks: { precision: 0 } },
+          x: { grid: { display: false } }
+        }
+      }
+    });
+  }
+</script>
+{% endblock %}

@@ -1,4 +1,21 @@
+'''
+===========================================================
+StrokeCare Web Application — Secure Software Development
+Author: Vishvapriya Sangvikar
+
+Course: COM7033 – MSc Data Science & Artificial Intelligence
+Student ID: 2415083
+Institution: Leeds Trinity University
+Assessment: Assessment 1 – Software Artefact (70%)
+AI Statement: Portions of this file were drafted or refined using
+    generative AI for planning and editing only,
+    as permitted in the module brief.
+===========================================================
+'''
+
 # app/routes/auth.py
+from __future__ import annotations
+
 from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.routing import BuildError
@@ -36,6 +53,8 @@ def login():
 
     form = LoginForm()
 
+    # NOTE: reCAPTCHA is validated automatically here because
+    # LoginForm includes `recaptcha = RecaptchaField()`.
     if form.validate_on_submit():
         email = (form.email.data or "").strip().lower()
         user = User.query.filter_by(email=email).first()
@@ -43,7 +62,7 @@ def login():
         if user and user.check_password(form.password.data):
             login_user(user, remember=form.remember_me.data)
 
-            # ✅ Audit successful login
+            # Audit successful login
             audit(
                 user_id=user.id,
                 action="user_login",
@@ -55,7 +74,15 @@ def login():
             flash("Welcome back!", "success")
             return redirect(_dashboard_url())
 
-        # (optional) you *could* also audit failed attempts, but not required
+        # Optional: audit failed login attempts (no lockout logic, just logging)
+        audit(
+            user_id=user.id if user else None,
+            action="user_login_failed",
+            resource_type="auth",
+            resource_id=user.id if user else None,
+            details=f"Failed login attempt for email={email}",
+        )
+
         flash("Invalid email or password.", "danger")
 
     return render_template("auth/login.html", form=form)
@@ -67,7 +94,7 @@ def login():
 @bp.route("/logout")
 @login_required
 def logout():
-    # ✅ Audit logout BEFORE clearing current_user
+    # Audit logout BEFORE clearing current_user
     audit(
         user_id=getattr(current_user, "id", None),
         action="user_logout",
@@ -114,7 +141,7 @@ def register():
         flash("Account created successfully — please sign in.", "success")
         return redirect(url_for("auth.login"))
 
-    # POST happened but form didn't validate (CSRF, password mismatch, etc.)
+    # POST happened but form didn't validate (CSRF, password mismatch, captcha, etc.)
     if request.method == "POST":
         flash("Please check the form for errors and try again.", "danger")
 

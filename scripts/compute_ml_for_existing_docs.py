@@ -1,9 +1,24 @@
+'''
+===========================================================
+StrokeCare Web Application — Secure Software Development
+Author: Vishvapriya Sangvikar
+
+Course: COM7033 – MSc Data Science & Artificial Intelligence
+Student ID: 2415083
+Institution: Leeds Trinity University
+Assessment: Assessment 1 – Software Artefact (70%)
+AI Statement: Portions of this file were drafted or refined using
+    generative AI for planning and editing only,
+    as permitted in the module brief.
+===========================================================
+'''
+
 """
 Recompute ML stroke-risk predictions for **all active patients** in MongoDB.
 
 This script:
  - Uses app.ml.predict_service.run_ml_on_patient_doc()
-   (the SAME helper the doctor view uses)
+   (the SAME helper the doctor & HCP views use)
  - Writes risk_assessment = {
        _score, _level, _flag, _calculated_at
    }
@@ -28,10 +43,10 @@ def risk_label(score: float | None) -> str:
     """
     Map a probability score (0–1) into a human-readable risk label.
 
-    Thresholds (matching the unit tests):
-      Low    : < 0.30
-      Medium : 0.30 – 0.69
-      High   : ≥ 0.70
+    Thresholds (matching the prediction service):
+      Low    : < 0.12
+      Medium : 0.12 – 0.29
+      High   : ≥ 0.30
     """
     if score is None:
         return "Unknown"
@@ -41,9 +56,9 @@ def risk_label(score: float | None) -> str:
     except (TypeError, ValueError):
         return "Unknown"
 
-    if s < 0.30:
+    if s < 0.12:
         return "Low"
-    elif s < 0.70:
+    elif s < 0.30:
         return "Medium"
     else:
         return "High"

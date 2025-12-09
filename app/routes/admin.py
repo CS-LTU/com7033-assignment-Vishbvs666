@@ -1,7 +1,24 @@
+'''
+===========================================================
+StrokeCare Web Application — Secure Software Development
+Author: Vishvapriya Sangvikar
+
+Course: COM7033 – MSc Data Science & Artificial Intelligence
+Student ID: 2415083
+Institution: Leeds Trinity University
+Assessment: Assessment 1 – Software Artefact (70%)
+AI Statement: Portions of this file were drafted or refined using
+    generative AI for planning and editing only,
+    as permitted in the module brief.
+===========================================================
+'''
+
 # app/routes/admin.py
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timedelta
+from pathlib import Path
+import json
 
 from bson.objectid import ObjectId
 from flask import (
@@ -23,7 +40,12 @@ from app.db.mongo import get_patient_collection
 
 bp = Blueprint("admin", __name__, url_prefix="/admin")
 
+from flask import Blueprint, render_template, redirect, url_for, abort
+from flask_login import login_required, current_user
 
+
+BASE_DIR = Path(__file__).resolve().parents[2]
+MODEL_INFO_PATH = BASE_DIR / "instance" / "stroke_model_info.json"
 # ---------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------
@@ -162,54 +184,89 @@ def admin_dashboard():
 # ---------------------------------------------------------
 # ANALYTICS / ACTIVITY
 # ---------------------------------------------------------
+# --------------------------------------------------------------------
+# ADMIN ANALYTICS – predictions + risk + users by role
+# --------------------------------------------------------------------
 @bp.route("/analytics")
 @login_required
 def admin_analytics():
     _ensure_admin()
 
-    total_predictions = StrokePrediction.query.count()
+    # ---------- PREDICTIONS OVER LAST 14 DAYS ----------
+    today = datetime.utcnow().date()
+    start_date = today - timedelta(days=13)  # inclusive window: 14 days
 
-    # count distinct prediction records (no user_id needed)
-    try:
-        users_with_predictions = (
-            db.session.query(
-                func.count(func.distinct(StrokePrediction.id))
-            ).scalar()
-            or 0
+    # Query counts per calendar day from StrokePrediction
+    daily_query = (
+        db.session.query(
+            func.date(StrokePrediction.created_at).label("day"),
+            func.count(StrokePrediction.id).label("count"),
         )
-    except Exception:
-        users_with_predictions = 0
+        .filter(StrokePrediction.created_at >= start_date)
+        .group_by(func.date(StrokePrediction.created_at))
+        .order_by(func.date(StrokePrediction.created_at))
+    )
 
-    try:
-        recent_predictions = (
-            StrokePrediction.query
-            .order_by(StrokePrediction.created_at.desc())
-            .limit(10)
-            .all()
+    daily_rows = daily_query.all()
+    daily_map = {row.day: row.count for row in daily_rows}
+
+    daily_labels: list[str] = []
+    daily_values: list[int] = []
+
+    for i in range(14):
+        d = start_date + timedelta(days=i)
+        daily_labels.append(d.strftime("%Y-%m-%d"))
+        daily_values.append(int(daily_map.get(d, 0)))
+
+    # ---------- RISK LEVEL DISTRIBUTION (GLOBAL) ----------
+    risk_rows = (
+        db.session.query(
+            StrokePrediction.risk_level,
+            func.count(StrokePrediction.id),
         )
-    except Exception:
-        recent_predictions = StrokePrediction.query.limit(10).all()
-
-    recent_logs = (
-        AuditLog.query
-        .order_by(AuditLog.created_at.desc())
-        .limit(10)
+        .group_by(StrokePrediction.risk_level)
         .all()
     )
 
-    metrics = {
-        "total_predictions": total_predictions,
-        "users_with_predictions": users_with_predictions,
-    }
+    # Normalise into Low / Medium / High buckets
+    risk_buckets = {"Low": 0, "Medium": 0, "High": 0}
+    total_predictions = 0
 
-    has_predict_view = "predict.predict" in current_app.view_functions
+    for level, count in risk_rows:
+        if not level:
+            continue
+        # ensure title-case so it matches labels used elsewhere
+        label = str(level).title()
+        if label not in risk_buckets:
+            risk_buckets[label] = 0
+        risk_buckets[label] += int(count)
+        total_predictions += int(count)
+
+    risk_labels = list(risk_buckets.keys())
+    risk_values = [risk_buckets[label] for label in risk_labels]
+
+    # ---------- USER ACCOUNTS BY ROLE ----------
+    role_rows = (
+        db.session.query(User.role, func.count(User.id))
+        .group_by(User.role)
+        .all()
+    )
+    role_map = {role: count for role, count in role_rows}
+
+    # Keep a nice, fixed order if roles exist
+    role_order = ["admin", "doctor", "hcp", "patient"]
+    user_role_labels = [r.title() for r in role_order if r in role_map]
+    user_role_values = [int(role_map[r]) for r in role_order if r in role_map]
 
     return render_template(
         "admin/analytics.html",
-        metrics=metrics,
-        recent_predictions=recent_predictions,
-        recent_logs=recent_logs,
-        has_predict_view=has_predict_view,
+        daily_labels=daily_labels,
+        daily_values=daily_values,
+        risk_labels=risk_labels,
+        risk_values=risk_values,
+        total_predictions=total_predictions,
+        user_role_labels=user_role_labels,
+        user_role_values=user_role_values,
     )
 
 

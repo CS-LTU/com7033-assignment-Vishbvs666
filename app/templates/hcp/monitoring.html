@@ -15,11 +15,12 @@
       </div>
     </div>
 
-    <div class="row g-3">
+    <!-- Top cards row -->
+    <div class="row g-3 mb-3">
 
-      <!-- TREND ANALYSIS + CHART -->
+      <!-- TREND ANALYSIS -->
       <div class="col-md-4">
-        <div class="sc-card h-100 mb-3">
+        <div class="sc-card h-100">
           <h2 class="sc-card-title mb-2">Trend analysis</h2>
           {% if trend_items %}
             <ul class="list-unstyled small mb-0">
@@ -35,20 +36,6 @@
               visualise patterns in vitals and stroke risk scores over time.
             </p>
           {% endif %}
-        </div>
-
-        <!-- Line Chart Card -->
-        <div class="sc-card">
-          <div class="d-flex justify-content-between align-items-center mb-1">
-            <h2 class="sc-card-title mb-0">Prediction trend</h2>
-            <span class="badge bg-light text-muted small">
-              {{ (trend_labels|length) or 0 }} points
-            </span>
-          </div>
-          <p class="text-muted small mb-2">
-            Latest stroke risk probabilities across your patients.
-          </p>
-          <canvas id="predictionTrendChart" height="150"></canvas>
         </div>
       </div>
 
@@ -101,83 +88,255 @@
         </div>
       </div>
     </div>
+
+    {# --------------------------------------------- #}
+    {#  Normalise risk data: support both styles     #}
+    {#  - risk_data = {labels: [...], values: [...]} #}
+    {#  - risk_labels / risk_values                  #}
+    {# --------------------------------------------- #}
+    {% set rl = [] %}
+    {% set rv = [] %}
+    {% if risk_data is defined and risk_data.labels and risk_data.values %}
+      {% set rl = risk_data.labels %}
+      {% set rv = risk_data.values %}
+    {% else %}
+      {% if risk_labels is defined and risk_labels %}
+        {% set rl = risk_labels %}
+      {% endif %}
+      {% if risk_values is defined and risk_values %}
+        {% set rv = risk_values %}
+      {% endif %}
+    {% endif %}
+    {% set has_data = rv and (rv | sum) > 0 %}
+
+    <!-- =============================== -->
+    <!-- RISK DISTRIBUTION – CHART CARD -->
+    <!-- =============================== -->
+    <div class="sc-card mt-1">
+      <div class="d-flex justify-content-between align-items-center mb-1">
+        <div>
+          <h2 class="sc-card-title mb-1">Risk distribution</h2>
+          <p class="text-muted small mb-0">
+            Latest stroke risk levels across all active patients.
+          </p>
+        </div>
+
+        <div class="d-flex align-items-center gap-3">
+          <!-- Chart type switcher -->
+          <div class="btn-group btn-group-sm sc-chart-toggle-group" role="group" aria-label="Chart type">
+            <button type="button"
+                    class="btn btn-outline-secondary active sc-chart-toggle"
+                    data-chart-type="doughnut">
+              Donut
+            </button>
+            <button type="button"
+                    class="btn btn-outline-secondary sc-chart-toggle"
+                    data-chart-type="bar">
+              Bar
+            </button>
+            <button type="button"
+                    class="btn btn-outline-secondary sc-chart-toggle"
+                    data-chart-type="line">
+              Line
+            </button>
+          </div>
+
+          <span class="text-muted small">
+            {{ total_patients or 0 }} patients
+          </span>
+        </div>
+      </div>
+
+      <div class="row align-items-center mt-3">
+        <!-- Chart -->
+        <div class="col-lg-7">
+          {% if has_data %}
+            <div style="height: 260px;">
+              <canvas id="riskDistributionChart"></canvas>
+            </div>
+          {% else %}
+            <p class="text-muted small mb-0">
+              No risk data available yet. Once patients have stroke risk scores,
+              the distribution will appear here.
+            </p>
+          {% endif %}
+        </div>
+
+        <!-- Legend / Snapshot -->
+        <div class="col-lg-5 mt-3 mt-lg-0">
+          <div class="small">
+            <div class="fw-semibold mb-2">Snapshot</div>
+
+            <ul class="list-unstyled mb-0">
+              <li class="d-flex align-items-start mb-1">
+                <span class="sc-legend-dot me-2" style="background-color:#34c759;"></span>
+                <span><strong>Low risk</strong> — majority of patients with stable profiles.</span>
+              </li>
+              <li class="d-flex align-items-start mb-1">
+                <span class="sc-legend-dot me-2" style="background-color:#ffcc00;"></span>
+                <span><strong>Medium risk</strong> — patients to keep on your watch list.</span>
+              </li>
+              <li class="d-flex align-items-start mb-1">
+                <span class="sc-legend-dot me-2" style="background-color:#ff3b30;"></span>
+                <span><strong>High risk</strong> — consider prioritising review and follow-up.</span>
+              </li>
+              <li class="d-flex align-items-start">
+                <span class="sc-legend-dot me-2" style="background-color:#9ca3af;"></span>
+                <span><strong>Unknown</strong> — missing data or not yet scored.</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
 
 <!-- ========================= -->
-<!-- CHART.JS & TREND CHART JS -->
+<!-- CHART.JS & RISK CHART JS -->
 <!-- ========================= -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
-  // Real data coming from Flask (StrokePrediction table)
-  const trendLabels = {{ trend_labels|default([])|tojson }};
-  const trendScores = {{ trend_scores|default([])|tojson }};
+  // Normalised data from Flask (supports risk_data or risk_labels/risk_values)
+  const riskLabels = {{ rl | tojson }};
+  const riskValues = {{ rv | tojson }};
+  const totalPatients = {{ total_patients or 0 }};
 
-  const canvas = document.getElementById("predictionTrendChart");
+  const canvas = document.getElementById("riskDistributionChart");
+  let riskChart = null;
+  let currentType = "doughnut";
 
-  if (canvas && trendLabels.length && trendScores.length) {
-    const ctx = canvas.getContext("2d");
+  function buildDataset(type) {
+    return {
+      label: "Number of patients",
+      data: riskValues,
+      backgroundColor: [
+        "rgba(52, 199, 89, 0.9)",   // Low  – green
+        "rgba(255, 204, 0, 0.9)",   // Medium – amber
+        "rgba(255, 59, 48, 0.9)",   // High – red
+        "rgba(148, 163, 184, 0.9)", // Unknown – grey
+      ],
+      borderColor: [
+        "rgba(52, 199, 89, 1)",
+        "rgba(255, 204, 0, 1)",
+        "rgba(255, 59, 48, 1)",
+        "rgba(148, 163, 184, 1)",
+      ],
+      borderWidth: type === "doughnut" ? 2 : 1.5,
+      borderRadius: type === "bar" ? 14 : 0,
+      tension: type === "line" ? 0.35 : 0,
+      hoverOffset: type === "doughnut" ? 6 : 4,
+    };
+  }
 
-    new Chart(ctx, {
-      type: "line",
-      data: {
-        labels: trendLabels,
-        datasets: [{
-          label: "Stroke risk probability",
-          data: trendScores,
-          borderColor: "rgba(136, 58, 255, 1)",          // StrokeCare violet
-          backgroundColor: "rgba(136, 58, 255, 0.12)",
-          borderWidth: 3,
-          pointRadius: 4,
-          pointHoverRadius: 5,
-          tension: 0.35
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            callbacks: {
-              label: function(ctx) {
-                const v = ctx.parsed.y;
-                return "Risk score: " + v.toFixed(2);
+  function buildOptions(type) {
+    const common = {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: function(ctx) {
+              const label = ctx.label || "";
+              const raw = (typeof ctx.parsed === "object" ? ctx.parsed.y : ctx.parsed);
+              const value = raw ?? 0;
+              if (!totalPatients) {
+                return label + ": " + value + " patients";
               }
-            }
-          }
-        },
-        scales: {
-          y: {
-            beginAtZero: true,
-            max: 1,
-            grid: { color: "rgba(148, 163, 184, 0.2)" },
-            title: {
-              display: true,
-              text: "Risk Score"
-            }
-          },
-          x: {
-            grid: { display: false },
-            title: {
-              display: true,
-              text: "Date"
+              const pct = (value / totalPatients) * 100;
+              return `${label}: ${value} patients (${pct.toFixed(1)}%)`;
             }
           }
         }
       }
-    });
-  } else if (canvas) {
-    // No data yet → show a friendly message under the empty card
-    const container = canvas.parentElement;
-    canvas.style.display = "none";
-    if (container) {
-      const msg = document.createElement("p");
-      msg.className = "text-muted small mb-0";
-      msg.textContent = "No prediction data stored yet. Run some stroke checks to see the trend over time.";
-      container.appendChild(msg);
+    };
+
+    if (type === "doughnut") {
+      return Object.assign({}, common, {
+        cutout: "65%"
+      });
     }
+
+    // Bar & line use axes
+    return Object.assign({}, common, {
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: { precision: 0 },
+          grid: { color: "rgba(148, 163, 184, 0.18)" },
+          title: { display: true, text: "Number of patients" }
+        },
+        x: {
+          grid: { display: false }
+        }
+      }
+    });
   }
+
+  function renderRiskChart(type) {
+    if (!canvas || !riskLabels.length || !riskValues.length) {
+      return;
+    }
+    const ctx = canvas.getContext("2d");
+
+    if (riskChart) {
+      riskChart.destroy();
+    }
+
+    const data = {
+      labels: riskLabels,
+      datasets: [buildDataset(type)]
+    };
+
+    const options = buildOptions(type);
+    const chartType = (type === "bar" || type === "line") ? type : "doughnut";
+
+    riskChart = new Chart(ctx, {
+      type: chartType,
+      data: data,
+      options: options
+    });
+
+    currentType = type;
+  }
+
+  // Initialise chart only if we have data (HTML already shows "no data" otherwise)
+  if (riskLabels.length && riskValues.length && riskValues.reduce((a, b) => a + b, 0) > 0) {
+    renderRiskChart(currentType);
+  }
+
+  // Toggle buttons
+  document.querySelectorAll(".sc-chart-toggle").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const newType = btn.getAttribute("data-chart-type");
+      if (!newType || newType === currentType) return;
+
+      // update active state
+      document
+        .querySelectorAll(".sc-chart-toggle")
+        .forEach(b => b.classList.remove("active"));
+
+      btn.classList.add("active");
+      renderRiskChart(newType);
+    });
+  });
 </script>
+
+<style>
+  /* Tiny helper dots for legend */
+  .sc-legend-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+  }
+
+  .sc-chart-toggle-group .btn {
+    border-radius: 999px !important;
+    padding-inline: 0.9rem;
+  }
+</style>
 {% endblock %}

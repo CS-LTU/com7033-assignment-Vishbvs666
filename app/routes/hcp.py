@@ -1,3 +1,18 @@
+'''
+===========================================================
+StrokeCare Web Application — Secure Software Development
+Author: Vishvapriya Sangvikar
+
+Course: COM7033 – MSc Data Science & Artificial Intelligence
+Student ID: 2415083
+Institution: Leeds Trinity University
+Assessment: Assessment 1 – Software Artefact (70%)
+AI Statement: Portions of this file were drafted or refined using
+    generative AI for planning and editing only,
+    as permitted in the module brief.
+===========================================================
+'''
+
 # app/routes/hcp.py
 from __future__ import annotations
 
@@ -49,6 +64,13 @@ def hcp_dashboard():
 
     For the assignment we treat all active patients as 'assigned'.
     In a real system we’d also scope to patients linked to this HCP.
+
+    High-risk patients here are those where:
+      risk_assessment._level == "High"
+    which comes from our ML thresholds:
+      High  : probability ≥ 0.30
+      Medium: 0.12–0.29
+      Low   : < 0.12
     """
     _ensure_hcp()
     coll = get_patient_collection()
@@ -91,6 +113,12 @@ def hcp_patients():
 
     • Looks like the doctor patient list.
     • Read-only demographics + risk, but HCP can add/delete records.
+
+    Risk fields come from:
+      risk_assessment._score  (float probability 0–1)
+      risk_assessment._level  ("Low"/"Medium"/"High"/"Unknown")
+    which are written by scripts/compute_ml_for_existing_docs.py
+    using app.ml.predict_service.run_ml_on_patient_doc().
     """
     _ensure_hcp()
     coll = get_patient_collection()
@@ -186,6 +214,7 @@ def hcp_patient_new():
             "avg_glucose_level": _to_float(form.get("avg_glucose_level")),
             "bmi": _to_float(form.get("bmi")),
             "smoking_status": form.get("smoking_status") or None,
+            # optional label from original dataset (for teaching only)
             "dataset_stroke_flag": form.get("dataset_stroke_flag") or None,
         }
 
@@ -194,7 +223,7 @@ def hcp_patient_new():
             "original_id": None,
             "demographics": demo,
             "risk_assessment": {
-                "_level": "Unknown",
+                "_level": "Unknown",   # will be recomputed by ML script
                 "_score": 0.0,
                 "_factors": [],
                 "_calculated_at": None,
@@ -249,6 +278,13 @@ def hcp_patient_delete(patient_id: str):
 @bp.route("/patients/<patient_id>")
 @login_required
 def hcp_patient_detail(patient_id: str):
+    """
+    HCP patient care view.
+
+    Shows a single patient with their ML-based risk score and label.
+    Risk fields come directly from risk_assessment._score / _level
+    written by our recompute script using the same ML model.
+    """
     _ensure_hcp()
 
     coll = get_patient_collection()
@@ -256,6 +292,8 @@ def hcp_patient_detail(patient_id: str):
     vitals: list[dict] = []
     medications: list[dict] = []
     notes: list[dict] = []
+
+    # Static example tasks just for UI richness
     tasks: list[dict] = [
         {
             "patient_id": "P001",
@@ -293,7 +331,7 @@ def hcp_patient_detail(patient_id: str):
                 "age": demo.get("age"),
                 "sex": demo.get("gender"),
                 "risk_level": risk.get("_level", "Unknown"),
-                "risk_score": risk.get("_score", 0.0),
+                "risk_score": float(risk.get("_score") or 0.0),
             }
     except Exception:
         patient = None
@@ -311,23 +349,63 @@ def hcp_patient_detail(patient_id: str):
 # --------------------------------------------------------------------
 # TODAY'S TASKS VIEW (placeholder)
 # --------------------------------------------------------------------
+# --------------------------------------------------------------------
+# TODAY'S TASKS VIEW – sample checklist for current shift
+# --------------------------------------------------------------------
 @bp.route("/tasks")
 @login_required
 def hcp_tasks():
     _ensure_hcp()
 
-    tasks: list[dict] = []
+    # Static sample tasks just for UI demo (no DB yet)
+    tasks: list[dict] = [
+        {
+            "time": "08:30",
+            "patient_name": "CherryPixels",
+            "label": "Morning vitals check",
+            "detail": "Record BP, HR, and oxygen saturation before 09:00.",
+            "done": False,
+            "priority": "high",
+        },
+        {
+            "time": "10:15",
+            "patient_name": "Patient 67",
+            "label": "Medication reminder – Aspirin 75mg",
+            "detail": "Confirm medication taken and update MAR.",
+            "done": False,
+            "priority": "medium",
+        },
+        {
+            "time": "13:00",
+            "patient_name": "Patient 84",
+            "label": "Glucose monitoring",
+            "detail": "Capture pre-lunch blood glucose reading.",
+            "done": True,
+            "priority": "low",
+        },
+        {
+            "time": "15:30",
+            "patient_name": "Ward round",
+            "label": "Brief notes for doctor review",
+            "detail": "Summarise any changes in status for today’s round.",
+            "done": False,
+            "priority": "medium",
+        },
+    ]
+
     return render_template("hcp/tasks.html", tasks=tasks)
 
-
 # --------------------------------------------------------------------
-# MONITORING & ALERTS (placeholder lists)
+# MONITORING & ALERTS (placeholder lists + real risk distribution)
 # --------------------------------------------------------------------
 @bp.route("/monitoring")
 @login_required
 def hcp_monitoring():
     _ensure_hcp()
 
+    coll = get_patient_collection()
+
+    # --- static placeholders (as before) ---
     trend_items: list[dict] = [
         {
             "patient_name": "CherryPixels",
@@ -363,11 +441,66 @@ def hcp_monitoring():
         },
     ]
 
+    # ---- real Mongo-backed risk distribution for the chart ----
+    try:
+        # Treat everything without explicit is_active=False as active
+        base_filter = {
+            "$or": [
+                {"system_metadata.is_active": True},
+                {"system_metadata.is_active": {"$exists": False}},
+            ]
+        }
+
+        def level_filter(label: str) -> dict:
+            """Match either _level or level with the given label."""
+            return {
+                "$and": [
+                    base_filter,
+                    {
+                        "$or": [
+                            {"risk_assessment._level": label},
+                            {"risk_assessment.level": label},
+                        ]
+                    },
+                ]
+            }
+
+        low_count = coll.count_documents(level_filter("Low"))
+        med_count = coll.count_documents(level_filter("Medium"))
+        high_count = coll.count_documents(level_filter("High"))
+
+        # Unknown = active docs that are NOT Low/Medium/High (on either key)
+        unknown_filter = {
+            "$and": [
+                base_filter,
+                {
+                    "$nor": [
+                        {"risk_assessment._level": {"$in": ["Low", "Medium", "High"]}},
+                        {"risk_assessment.level": {"$in": ["Low", "Medium", "High"]}},
+                    ]
+                },
+            ]
+        }
+        unknown_count = coll.count_documents(unknown_filter)
+
+        total_patients = coll.count_documents(base_filter)
+
+        risk_labels = ["Low", "Medium", "High", "Unknown"]
+        risk_values = [low_count, med_count, high_count, unknown_count]
+
+    except Exception:
+        total_patients = 0
+        risk_labels = []
+        risk_values = []
+
     return render_template(
         "hcp/monitoring.html",
         trend_items=trend_items,
         alerts=alerts,
         communications=communications,
+        total_patients=total_patients,
+        risk_labels=risk_labels,
+        risk_values=risk_values,
     )
 
 
@@ -377,6 +510,13 @@ def hcp_monitoring():
 @bp.route("/patients/high")
 @login_required
 def hcp_patients_high():
+    """
+    List of high-risk patients for HCP.
+
+    High risk is based on:
+      risk_assessment._level == "High"
+    which comes from the same ML thresholds as the rest of the app.
+    """
     _ensure_hcp()
 
     coll = get_patient_collection()
@@ -405,7 +545,7 @@ def hcp_patients_high():
                 "age": demo.get("age"),
                 "sex": demo.get("gender"),
                 "risk_level": risk.get("_level", "Unknown"),
-                "risk_score": risk.get("_score", 0.0),
+                "risk_score": float(risk.get("_score") or 0.0),
                 "last_update": meta.get("last_modified_at"),
             }
         )
