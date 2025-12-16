@@ -97,3 +97,29 @@ source venv/bin/activate   # macOS/Linux
 
 # Install dependencies
 pip install -r requirements.txt
+
+## 4.3 Configuration
+
+Application configuration is stored securely in the following file:
+
+- `instance/config.py`
+
+Sensitive information such as:
+- database connection details
+- secret keys
+- environment-specific settings  
+
+is **separated from the main source code**, reducing the risk of accidental exposure and supporting secure software development practices.
+
+---
+
+## 4.4 Running the Application
+
+To start the Flask application, run the following command:
+
+```bash
+python run.py
+
+Once the server is up and running
+
+http://127.0.0.1:5000
