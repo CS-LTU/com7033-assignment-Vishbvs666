@@ -1,4 +1,4 @@
-'''
+"""
 ===========================================================
 StrokeCare Web Application — Secure Software Development
 Author: Vishvapriya Sangvikar
@@ -11,16 +11,30 @@ AI Statement: Portions of this file were drafted or refined using
     generative AI for planning and editing only,
     as permitted in the module brief.
 ===========================================================
-'''
+"""
 
 # app/extensions.py
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
-from flask_wtf import CSRFProtect   # this import path is fine
+from flask_wtf import CSRFProtect
+
+# Rate limiting (Flask-Limiter)
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 
 db = SQLAlchemy()
 login_manager = LoginManager()
 csrf = CSRFProtect()
+
+# ---------------------------------------------------------
+# Rate limiter
+# ---------------------------------------------------------
+# NOTE: "memory://" is fine for coursework + single instance.
+# If you deploy multi-instance, use Redis storage.
+limiter = Limiter(
+    key_func=get_remote_address,
+    storage_uri="memory://",
+)
 
 # --------------------------
 # User loader required by Flask-Login

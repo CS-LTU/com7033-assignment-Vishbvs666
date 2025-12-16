@@ -40,33 +40,36 @@ class Config:
     # -------------------------
     # Session Security settings
     # -------------------------
-    SECURITY_SESSION_MINUTES = int(
-        os.environ.get("SECURITY_SESSION_MINUTES", 60)
-    )
+    SECURITY_SESSION_MINUTES = int(os.environ.get("SECURITY_SESSION_MINUTES", 60))
 
     # -------------------------
-    # Global Rate Limiting
+    # Global Rate Limiting (if you use Flask-Limiter elsewhere)
     # -------------------------
     RATELIMIT_DEFAULT = os.environ.get("RATELIMIT_DEFAULT", "60 per minute")
 
     # -------------------------
+    # Auth: login rate-limit + CAPTCHA escalation
+    # -------------------------
+    AUTH_RATE_WINDOW_SECONDS = int(os.environ.get("AUTH_RATE_WINDOW_SECONDS", 900))  # 15 min
+    AUTH_CAPTCHA_AFTER = int(os.environ.get("AUTH_CAPTCHA_AFTER", 3))               # captcha after 3 fails
+    AUTH_MAX_ATTEMPTS = int(os.environ.get("AUTH_MAX_ATTEMPTS", 6))                 # lock after 6 fails
+    AUTH_LOCKOUT_SECONDS = int(os.environ.get("AUTH_LOCKOUT_SECONDS", 600))         # 10 min lockout
+
+    # -------------------------
     # reCAPTCHA (Flask-WTF)
     # -------------------------
-    # Using Google OFFICIAL TEST KEYS:
-    # These NEVER fail and are meant for localhost + development.
-    # They remove the “Invalid site key” error and show a working captcha.
+    # Google OFFICIAL TEST KEYS (work on localhost / dev)
     RECAPTCHA_PUBLIC_KEY = os.environ.get(
         "RECAPTCHA_PUBLIC_KEY",
-        "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"
+        "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI",
     )
     RECAPTCHA_PRIVATE_KEY = os.environ.get(
         "RECAPTCHA_PRIVATE_KEY",
-        "6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe"
+        "6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe",
     )
 
-    # reCAPTCHA UI options
+    # UI options
     RECAPTCHA_OPTIONS = {"theme": "light", "size": "normal"}
 
-    # If set to TRUE, reCAPTCHA *must* validate or login fails.
-    # For assignment/demo we keep it False.
+    # If TRUE → captcha must validate always
     RECAPTCHA_STRICT = os.environ.get("RECAPTCHA_STRICT", "0") == "1"

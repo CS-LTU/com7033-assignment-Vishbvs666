@@ -30,7 +30,8 @@
       </div>
     </div>
 
-    <!-- Filter / search -->
+    {% if risk_filter == 'all' %}
+    <!-- Filter / search (ONLY on All patients view) -->
     <form class="card sc-card mb-4" method="get">
       <div class="card-body">
         <div class="row g-3 align-items-end">
@@ -62,6 +63,7 @@
         </div>
       </div>
     </form>
+    {% endif %}
 
     <!-- List -->
     <div class="card sc-card">
@@ -79,13 +81,11 @@
         </span>
 
         <div class="d-flex align-items-center gap-2">
-          <!-- Add patient (manual entry) -->
           <a href="{{ url_for('doctor.doctor_new_patient') }}"
              class="btn btn-sm btn-outline-secondary">
             Add patient
           </a>
 
-          <!-- Scoped CSV export using same filters/search -->
           <a href="{{ url_for('doctor.doctor_export_patients',
                               filter=risk_filter,
                               q=search_query) }}"
@@ -129,18 +129,16 @@
                 </td>
                 <td>{{ "%.2f"|format(p.risk_score or 0.0) }}</td>
                 <td class="text-end">
-                    <!-- View button (for doctor + admin) -->
                   <a href="{{ url_for('doctor.doctor_patient_detail', patient_id=p.id) }}"
                     class="btn btn-sm btn-outline-secondary rounded-pill me-1">
                     View
                   </a>
 
-                  <!-- Admin-only soft delete -->
                   {% if current_user.role == 'admin' %}
                     <form method="post"
                           action="{{ url_for('doctor.patient_delete', patient_id=p.id) }}"
                           class="d-inline">
-                      {{ csrf_token() }}
+                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                       <button type="submit"
                               class="btn btn-sm btn-outline-danger rounded-pill">
                         Delete

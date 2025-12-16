@@ -1,25 +1,10 @@
-'''
-===========================================================
-StrokeCare Web Application — Secure Software Development
-Author: Vishvapriya Sangvikar
-
-Course: COM7033 – MSc Data Science & Artificial Intelligence
-Student ID: 2415083
-Institution: Leeds Trinity University
-Assessment: Assessment 1 – Software Artefact (70%)
-AI Statement: Portions of this file were drafted or refined using
-    generative AI for planning and editing only,
-    as permitted in the module brief.
-===========================================================
-'''
-
 # app/routes/doctor.py
 from __future__ import annotations
 
 from datetime import datetime
 from io import StringIO
 import csv
-import json  # NEW: for parsing JSON payloads if needed
+import re
 
 from flask import (
     Blueprint,
@@ -32,10 +17,9 @@ from flask import (
     Response,
 )
 from flask_login import login_required, current_user
-
 from bson.objectid import ObjectId
 
-from app.extensions import db
+from app.extensions import db  # noqa: F401  (kept if used elsewhere)
 from app.models import StrokePrediction
 from app.db.mongo import get_patient_collection
 
@@ -144,7 +128,6 @@ def doctor_dashboard():
     recent_predictions: list[dict] = []
 
     for p in recent_predictions_raw:
-        # raw_features is a JSON dict – may or may not contain patient_id
         try:
             features = p.raw_features or {}
         except Exception:
@@ -152,7 +135,6 @@ def doctor_dashboard():
 
         patient_id = None
         if isinstance(features, dict):
-            # try a few sensible keys
             patient_id = (
                 features.get("patient_id")
                 or features.get("original_id")
@@ -180,6 +162,7 @@ def doctor_dashboard():
         recent_predictions=recent_predictions,
     )
 
+
 # --------------------------------------------------------------------
 # Helper to build Mongo filter from querystring (re-used by list + CSV)
 # --------------------------------------------------------------------
@@ -187,99 +170,134 @@ def _build_patient_filter(
     risk_filter: str,
     search_query: str,
 ) -> dict:
-    mongo_filter: dict = {"system_metadata.is_active": True}
+    """
+    Builds a MongoDB filter based on:
+      - risk_filter: all|high|medium|low
+      - search_query: matches name/gender/smoking_status OR dataset original_id
+        (supports user typing "Patient 24289" or "24289")
+    """
+    base = {"system_metadata.is_active": True}
 
-    # Risk filter mapping – support both "level" and "_level"
-    if risk_filter in ("high", "medium", "low"):
-        label = risk_filter.capitalize()  # "High" / "Medium" / "Low"
-        mongo_filter["$or"] = [
+    risk_filter_norm = (risk_filter or "all").strip().lower()
+    search_query_norm = (search_query or "").strip()
+
+    risk_or = None
+    if risk_filter_norm in ("high", "medium", "low"):
+        label = risk_filter_norm.capitalize()  # High / Medium / Low
+        risk_or = [
             {"risk_assessment.level": label},
             {"risk_assessment._level": label},
         ]
 
-    # Text search (append to existing conditions if present)
-    if search_query:
-        text_condition = {
-            "$or": [
-                {"demographics.name": {"$regex": search_query, "$options": "i"}},
-                {"demographics.gender": {"$regex": search_query, "$options": "i"}},
-                {
-                    "medical_history.smoking_status": {
-                        "$regex": search_query,
-                        "$options": "i",
-                    }
-                },
+    text_or = None
+    if search_query_norm:
+        # Escape regex input to avoid weird regex chars breaking search
+        escaped = re.escape(search_query_norm)
+
+        ors = [
+            {"demographics.name": {"$regex": escaped, "$options": "i"}},
+            {"demographics.gender": {"$regex": escaped, "$options": "i"}},
+            {"medical_history.smoking_status": {"$regex": escaped, "$options": "i"}},
+        ]
+
+        # If user typed "Patient 24289", extract digits and match dataset id
+        digits = re.sub(r"\D+", "", search_query_norm)
+        if digits:
+            try:
+                ors.append({"original_id": int(digits)})
+            except ValueError:
+                pass
+
+        text_or = ors
+
+    # Combine safely
+    if risk_or and text_or:
+        return {
+            "$and": [
+                base,
+                {"$or": risk_or},
+                {"$or": text_or},
             ]
         }
-
-        if "$or" in mongo_filter:
-            # already have an $or from risk; combine with $and
-            mongo_filter = {
-                "$and": [
-                    {"system_metadata.is_active": True},
-                    {"$or": mongo_filter["$or"]},
-                    text_condition,
-                ]
-            }
-        else:
-            mongo_filter["$or"] = text_condition["$or"]
-
-    return mongo_filter
+    if risk_or:
+        return {**base, "$or": risk_or}
+    if text_or:
+        return {**base, "$or": text_or}
+    return base
 
 
 # --------------------------------------------------------------------
 # PATIENT LIST (READ)
 # --------------------------------------------------------------------
-@bp.route("/patients", methods=["GET"])
+@bp.route("/patients")
 @login_required
 def doctor_patients():
     _ensure_doctor()
 
+    q = (request.args.get("q") or "").strip()
+    risk_filter = (request.args.get("filter") or "all").strip().lower()
+
     coll = get_patient_collection()
 
-    risk_filter = request.args.get("filter", "all")
-    search_query = (request.args.get("q") or "").strip()
+    mongo_query: dict = {"system_metadata.is_active": True}
 
-    mongo_filter = _build_patient_filter(risk_filter, search_query)
+    # Apply risk filter (use the ML canonical field)
+    if risk_filter in {"high", "medium", "low"}:
+        mongo_query["risk_assessment._level"] = risk_filter.title()  # "High"/"Medium"/"Low"
+    else:
+        risk_filter = "all"
+
+    # Simple search (by original_id or a couple text fields)
+    if q:
+        or_clauses = []
+
+        # if numeric, match original_id
+        if q.isdigit():
+            or_clauses.append({"original_id": int(q)})
+
+        # text matches
+        or_clauses.extend(
+            [
+                {"demographics.gender": {"$regex": q, "$options": "i"}},
+                {"demographics.work_type": {"$regex": q, "$options": "i"}},
+                {"medical_history.smoking_status": {"$regex": q, "$options": "i"}},
+            ]
+        )
+
+        mongo_query["$or"] = or_clauses
 
     docs = list(
-        coll.find(mongo_filter)
-        .sort("demographics.age", -1)
-        .limit(50)
+        coll.find(mongo_query).sort(
+            [("risk_assessment._score", -1), ("original_id", 1)]
+        )
     )
 
-    patients: list[dict] = []
+    # build view models (whatever you already do) – just ensure these map from _level/_score
+    patients = []
     for d in docs:
-        demo = d.get("demographics", {}) or {}
-        risk = d.get("risk_assessment", {}) or {}
-
-        # use "level" / "score", fall back to underscored keys if present
-        level = risk.get("level")
-        if level is None:
-            level = risk.get("_level", "Unknown")
-
-        score = risk.get("score")
-        if score is None:
-            score = risk.get("_score", 0.0)
-
+        ra = d.get("risk_assessment") or {}
+        demo = d.get("demographics") or {}
         patients.append(
-            {
-                "id": str(d["_id"]),
-                "name": demo.get("name") or f"Patient {d.get('original_id')}",
-                "gender": demo.get("gender"),
-                "age": demo.get("age"),
-                "risk_level": level or "Unknown",
-                "risk_score": float(score or 0.0),
-            }
+            type(
+                "P",
+                (),
+                {
+                    "id": str(d.get("_id")),
+                    "name": demo.get("name") or f"Patient {d.get('original_id')}",
+                    "gender": demo.get("gender"),
+                    "age": demo.get("age"),
+                    "risk_level": ra.get("_level") or "Unknown",
+                    "risk_score": float(ra.get("_score") or 0.0),
+                },
+            )()
         )
 
     return render_template(
         "doctor/patients.html",
         patients=patients,
         risk_filter=risk_filter,
-        search_query=search_query,
+        search_query=q,
     )
-
 
 # --------------------------------------------------------------------
 # EXPORT (scoped CSV, HIPAA-friendly: only current filter/view)
@@ -298,11 +316,9 @@ def doctor_export_patients():
 
     docs = coll.find(mongo_filter)
 
-    # Build CSV in memory
     output = StringIO()
     writer = csv.writer(output)
 
-    # header
     writer.writerow(
         [
             "patient_id",
@@ -390,7 +406,6 @@ def doctor_add_patient():
     residence_type = (request.form.get("residence_type") or "").strip() or None
     smoking_status = (request.form.get("smoking_status") or "").strip() or None
 
-    # booleans from select
     def _yn_to_int(value: str | None) -> int | None:
         if not value:
             return None
@@ -405,7 +420,6 @@ def doctor_add_patient():
     heart_disease = _yn_to_int(request.form.get("heart_disease"))
     stroke_flag = _yn_to_int(request.form.get("stroke_flag"))
 
-    # numeric fields
     def _to_float(value: str | None) -> float | None:
         if not value:
             return None
@@ -425,9 +439,8 @@ def doctor_add_patient():
     coll = get_patient_collection()
     now = datetime.utcnow()
 
-    # Manual patient as per your schema
     doc = {
-        "original_id": None,  # manual entry, not from Kaggle CSV
+        "original_id": None,  # manual entry, not from dataset
         "demographics": {
             "name": name,
             "gender": gender,
@@ -446,9 +459,8 @@ def doctor_add_patient():
             "stroke": stroke_flag,
         },
         "risk_assessment": {
-            # use "score" / "level" to match imported docs
             "score": 0.0,
-            "level": "Unknown",   # later: populated by your ML model
+            "level": "Unknown",
             "factors": [],
             "calculated_at": None,
         },
@@ -556,9 +568,7 @@ def doctor_patient_detail(patient_id: str):
     except Exception:
         abort(404)
 
-    doc = coll.find_one(
-        {"_id": oid, "system_metadata.is_active": True}
-    )
+    doc = coll.find_one({"_id": oid, "system_metadata.is_active": True})
     if not doc:
         abort(404)
 
@@ -591,7 +601,7 @@ def doctor_patient_detail(patient_id: str):
         "risk_score": float(score or 0.0),
     }
 
-    prediction_history: list[dict] = []  # later: join with SQLite predictions
+    prediction_history: list[dict] = []
 
     return render_template(
         "doctor/patient_detail.html",
@@ -601,7 +611,7 @@ def doctor_patient_detail(patient_id: str):
 
 
 # --------------------------------------------------------------------
-# DOCTOR ANALYTICS (unchanged)
+# DOCTOR ANALYTICS
 # --------------------------------------------------------------------
 @bp.route("/analytics")
 @login_required
@@ -618,7 +628,6 @@ def doctor_analytics():
             base_q = StrokePrediction.query.filter_by(user_id=current_user.id)
 
             total_predictions = base_q.count()
-            # if/when you add risk_score, compute high_risk_predictions here
 
             recent_predictions = (
                 base_q.order_by(StrokePrediction.created_at.desc())
@@ -652,17 +661,14 @@ def doctor_analytics():
 
 
 # --------------------------------------------------------------------
-# DELETE PATIENT RECORD (hard delete) – Admin only
-# NOTE: this shares the same URL path as doctor_soft_delete_patient,
-# but is referenced by a different endpoint name in templates if used.
+# Admin-only delete endpoint (soft delete) – separated URL to avoid conflict
 # --------------------------------------------------------------------
-@bp.route("/patients/<patient_id>/delete", methods=["POST"])
+@bp.route("/patients/<patient_id>/delete-admin", methods=["POST"])
 @login_required
 def patient_delete(patient_id: str):
-    """Soft-delete a patient record – Admin only (see RBAC matrix)."""
+    """Soft-delete a patient record – Admin only."""
     _ensure_doctor()
 
-    # enforce “Admin only” for delete
     if getattr(current_user, "role", "") != "admin":
         abort(403)
 
@@ -678,7 +684,7 @@ def patient_delete(patient_id: str):
                 }
             },
         )
-        flash("Patient was archived (soft-deleted) successfully.", "success")
+        flash("Patient was archived (admin).", "success")
     except Exception:
         flash("Failed to delete patient record.", "danger")
 

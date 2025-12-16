@@ -90,12 +90,21 @@ def run_recompute() -> None:
             {"_id": oid},
             {
                 "$set": {
-                    "risk_assessment._score": proba,
-                    "risk_assessment._level": risk_level,
-                    "risk_assessment._flag": stroke_flag,
-                    "risk_assessment._calculated_at": now,
-                    "system_metadata.last_modified_at": now,
-                }
+                # preferred schema
+                "risk_assessment.score": float(proba),
+                "risk_assessment.level": risk_level,
+                "risk_assessment.flag": int(stroke_flag),
+                "risk_assessment.calculated_at": now,
+
+                # legacy keys (keep for safety)
+                "risk_assessment._score": float(proba),
+                "risk_assessment._level": risk_level,
+                "risk_assessment._flag": int(stroke_flag),
+                "risk_assessment._calculated_at": now,
+
+                "system_metadata.last_modified_at": now,
+}
+
             },
         )
 

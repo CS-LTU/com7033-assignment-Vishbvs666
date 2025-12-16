@@ -77,11 +77,18 @@
 
           <!-- reCAPTCHA -->
           <div class="mb-3">
-            {{ form.recaptcha() }}
-            {% if form.recaptcha.errors %}
-              <div class="form-text text-danger small">
-                {{ form.recaptcha.errors[0] }}
-              </div>
+            {% if form.recaptcha is defined %}
+              {{ form.recaptcha() }}
+              {% if captcha_required %}
+                <div class="form-text small text-muted">
+                  Extra verification enabled due to repeated failed attempts.
+                </div>
+              {% endif %}
+              {% if form.recaptcha.errors %}
+                <div class="form-text text-danger small">
+                  {{ form.recaptcha.errors[0] }}
+                </div>
+              {% endif %}
             {% endif %}
           </div>
 

@@ -24,15 +24,13 @@ from app import create_app
 from app.db.mongo import get_patient_collection
 from app.ml.predict_service import run_ml_on_patient_doc
 
-# Path to the Kaggle CSV (relative to project root)
 CSV_PATH = Path("data/healthcare-dataset-stroke-data.csv")
+
+# Set True only if you intentionally want a clean slate.
+CLEAR_FIRST = False
 
 
 def _compute_rule_based_risk(row: dict) -> tuple[float, str]:
-    """
-    Very simple rule-based risk score just so your demo
-    still has a fallback if ML fails for some row.
-    """
     score = 0.0
 
     age = float(row.get("age", 0) or 0)
@@ -43,7 +41,6 @@ def _compute_rule_based_risk(row: dict) -> tuple[float, str]:
     smoking_status = (row.get("smoking_status") or "").lower()
     stroke_flag = int(row.get("stroke", 0) or 0)
 
-    # Basic additive risk rules
     if age >= 65:
         score += 3
     if hypertension == 1:
@@ -59,20 +56,16 @@ def _compute_rule_based_risk(row: dict) -> tuple[float, str]:
             if bmi_val >= 30:
                 score += 1
         except ValueError:
-            # ignore weird BMI values
             pass
     else:
-        # Missing BMI → slight uncertainty bump
         score += 0.5
 
     if smoking_status in {"formerly smoked", "smokes"}:
         score += 1
 
-    # If stroke already occurred in dataset, bump risk
     if stroke_flag == 1:
         score += 2
 
-    # Classification thresholds
     if score <= 2:
         level = "Low"
     elif score <= 4:
@@ -84,10 +77,6 @@ def _compute_rule_based_risk(row: dict) -> tuple[float, str]:
 
 
 def row_to_patient_doc(row: dict) -> dict:
-    """
-    Map one CSV row from Kaggle into the MongoDB patient
-    document schema (with both flat and nested fields).
-    """
     rule_score, rule_level = _compute_rule_based_risk(row)
 
     bmi_raw = (row.get("bmi") or "").strip()
@@ -98,74 +87,61 @@ def row_to_patient_doc(row: dict) -> dict:
         except ValueError:
             bmi_val = None
 
+    now = datetime.utcnow()
+
     original_id = int(row["id"])
     gender = row.get("gender")
     age = float(row.get("age", 0) or 0)
-    hypertension = int(row.get("hypertension", 0) or 0)
-    stroke_flag = int(row.get("stroke", 0) or 0)
 
     doc = {
-        # --- top-level convenience fields for UI & filters ---
         "original_id": original_id,
-        "name": None,                   # CSV has no name → show "-" or blank in UI
-        "gender": gender,
-        "age": age,
-        "hypertension": hypertension,
-        "stroke_flag": stroke_flag,
-        "ever_married": row.get("ever_married"),
-        "work_type": row.get("work_type"),
-        "Residence_type": row.get("Residence_type"),
-        "avg_glucose_level": float(row.get("avg_glucose_level", 0) or 0),
-        "bmi": bmi_val,
-        "smoking_status": row.get("smoking_status"),
-
-        # --- nested structure for richer queries / future features ---
         "demographics": {
+            "name": None,
             "gender": gender,
             "age": age,
             "ever_married": row.get("ever_married"),
             "work_type": row.get("work_type"),
             "residence_type": row.get("Residence_type"),
+            "email": None,
         },
         "medical_history": {
-            "hypertension": hypertension,
+            "hypertension": int(row.get("hypertension", 0) or 0),
             "heart_disease": int(row.get("heart_disease", 0) or 0),
             "avg_glucose_level": float(row.get("avg_glucose_level", 0) or 0),
             "bmi": bmi_val,
             "smoking_status": row.get("smoking_status"),
-            "stroke": stroke_flag,
+            "stroke": int(row.get("stroke", 0) or 0),
         },
         "risk_assessment": {
-            # will be overridden by ML predictions
-            "score": rule_score,
+            "score": float(rule_score),
             "level": rule_level,
+            "flag": 0,
             "factors": [],
-            "last_calculated": None,
+            "calculated_at": None,
         },
         "system_metadata": {
-            "created_at": None,     # dataset import → no creator
+            "created_at": now,
             "created_by": None,
-            "last_modified_at": None,
+            "created_by_role": "script",
+            "last_modified_at": now,
             "last_modified_by": None,
-            "is_active": True,      # soft-delete flag
+            "is_active": True,
+            "import_source": "kaggle_csv",
         },
-        # Convenience top-level field for UI filtering
-        "risk_label": rule_level,
     }
 
     return doc
 
 
 def main() -> None:
-    # Use default Config from root/config.py via create_app()
     app = create_app()
 
     with app.app_context():
         coll = get_patient_collection()
 
-        # Clear existing docs so we don't duplicate
-        deleted = coll.delete_many({})
-        print(f"Cleared {deleted.deleted_count} existing patient docs from MongoDB.")
+        if CLEAR_FIRST:
+            deleted = coll.delete_many({})
+            print(f"Cleared {deleted.deleted_count} existing patient docs from MongoDB.")
 
         if not CSV_PATH.exists():
             raise FileNotFoundError(f"CSV file not found: {CSV_PATH}")
@@ -173,31 +149,40 @@ def main() -> None:
         with CSV_PATH.open(newline="", encoding="utf-8") as f:
             reader = csv.DictReader(f)
 
-            inserted = 0
-            for row in reader:
-                # 1) Build base document from CSV
-                doc = row_to_patient_doc(row)
+            upserted = 0
+            skipped = 0
 
-                # 2) Run ML model on this patient document
+            for idx, row in enumerate(reader, start=1):
                 try:
+                    doc = row_to_patient_doc(row)
+
+                    # ML prediction
                     proba, flag, level = run_ml_on_patient_doc(doc)
+                    now = datetime.utcnow()
 
                     doc["risk_assessment"]["score"] = float(proba)
                     doc["risk_assessment"]["level"] = level
-                    doc["risk_assessment"]["last_calculated"] = datetime.utcnow()
+                    doc["risk_assessment"]["flag"] = int(flag)
+                    doc["risk_assessment"]["calculated_at"] = now
+                    doc["system_metadata"]["last_modified_at"] = now
 
-                    doc["risk_label"] = level
-                    doc["ml_prediction"] = int(flag)
-                    doc["ml_prediction_label"] = "Stroke" if flag == 1 else "No stroke"
-                except Exception as exc:  # pragma: no cover – demo safety
-                    print(f"[WARN] ML prediction failed for row id={row.get('id')}: {exc}")
-                    # keep rule-based score/level if ML fails
+                    # UPSERT by original_id
+                    res = coll.update_one(
+                        {"original_id": doc["original_id"]},
+                        {"$set": doc},
+                        upsert=True,
+                    )
 
-                # 3) Insert into MongoDB
-                coll.insert_one(doc)
-                inserted += 1
+                    if res.upserted_id is not None or res.modified_count > 0:
+                        upserted += 1
 
-            print(f"Imported {inserted} patient records into MongoDB.")
+                except Exception as exc:
+                    skipped += 1
+                    print(f"[WARN] Row {idx} import failed (id={row.get('id')}): {exc}")
+
+            print(f"Upserted {upserted} patient records into MongoDB.")
+            if skipped:
+                print(f"Skipped {skipped} rows.")
 
 
 if __name__ == "__main__":

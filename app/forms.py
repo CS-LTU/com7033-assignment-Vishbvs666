@@ -14,9 +14,9 @@ AI Statement: Portions of this file were drafted or refined using
 '''
 
 # app/forms.py
-
 import re
 
+from flask import current_app, g
 from flask_wtf import FlaskForm, RecaptchaField
 from wtforms import (
     StringField,
@@ -36,8 +36,6 @@ from wtforms.validators import (
 # ----------------------------------------
 # Custom Validators (OWASP friendly)
 # ----------------------------------------
-
-
 def validate_any_email(form, field):
     """
     Permissive email validator that allows .test, .local, .nhs.uk, etc.
@@ -45,14 +43,13 @@ def validate_any_email(form, field):
     """
     email = (field.data or "").strip()
     pattern = r"^[^@]+@[^@]+\.[^@]+$"
-
     if not re.match(pattern, email):
         raise ValidationError("Enter a valid email address.")
 
 
 def strong_password(form, field):
     """
-    OWASP-recommended password strength:
+    OWASP-style password strength:
     - at least 8 characters
     - contains uppercase, lowercase, digit
     - contains at least one symbol
@@ -60,26 +57,23 @@ def strong_password(form, field):
     pwd = field.data or ""
     if len(pwd) < 8:
         raise ValidationError("Password must be at least 8 characters long.")
-
     if not re.search(r"[A-Z]", pwd):
         raise ValidationError("Must contain at least one uppercase letter.")
-
     if not re.search(r"[a-z]", pwd):
         raise ValidationError("Must contain at least one lowercase letter.")
-
     if not re.search(r"[0-9]", pwd):
         raise ValidationError("Must contain at least one number.")
-
     if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", pwd):
         raise ValidationError("Must contain at least one special character.")
 
 
 # ----------------------------------------
-# Login Form
+# Login Forms
 # ----------------------------------------
-
-
 class LoginForm(FlaskForm):
+    """
+    Base login form (email/password/remember). No captcha here.
+    """
     email = StringField(
         "Email",
         validators=[
@@ -96,32 +90,35 @@ class LoginForm(FlaskForm):
 
     remember_me = BooleanField("Keep me signed in")
 
-    # reCAPTCHA field (third-party protection)
-    recaptcha = RecaptchaField()
-
     submit = SubmitField("Sign In")
+
+
+class LoginCaptchaForm(LoginForm):
+    """
+    Same as LoginForm, plus reCAPTCHA field.
+    We will ALWAYS render this form in the template so captcha is visible,
+    but we only REQUIRE captcha after N failures (escalation).
+    """
+    recaptcha = RecaptchaField()
 
     def validate(self, extra_validators=None):  # type: ignore[override]
         """
-        Override default validate so that in *dev/demo mode* we don’t
-        block logins purely because we’re using dummy reCAPTCHA keys.
-
-        - If RECAPTCHA_STRICT = True  -> behave normally (captcha required)
-        - If RECAPTCHA_STRICT = False -> ignore recaptcha failures
+        Enforce captcha only when:
+        - escalation is active (g.captcha_required = True), OR
+        - RECAPTCHA_STRICT = True (force it always)
         """
-        from flask import current_app
-
-        strict = current_app.config.get("RECAPTCHA_STRICT", False)
-
-        # Let Flask-WTF do its thing first
         rv = super().validate(extra_validators=extra_validators)
 
-        if rv or strict:
-            # Either everything passed OR we are in strict mode
-            return rv
+        captcha_required = bool(getattr(g, "captcha_required", False))
+        strict = bool(current_app.config.get("RECAPTCHA_STRICT", False))
 
-        # Not strict and validation failed.
-        # If the only errors are on the recaptcha field, we treat it as OK.
+        if captcha_required or strict:
+            return rv  # normal behaviour
+
+        # Not required → ignore "recaptcha-only" failures
+        if rv:
+            return True
+
         non_captcha_errors = [
             (name, field.errors)
             for name, field in self._fields.items()
@@ -129,10 +126,9 @@ class LoginForm(FlaskForm):
         ]
 
         if non_captcha_errors:
-            # Some other field (email/password) is wrong → still fail.
             return False
 
-        # Only recaptcha failed → clear its errors and accept form.
+        # Only captcha failed → accept
         self.recaptcha.errors = []
         return True
 
@@ -140,8 +136,6 @@ class LoginForm(FlaskForm):
 # ----------------------------------------
 # Registration Form
 # ----------------------------------------
-
-
 class RegistrationForm(FlaskForm):
     email = StringField(
         "Email",
@@ -184,8 +178,6 @@ class RegistrationForm(FlaskForm):
 # ----------------------------------------
 # Reset Password Form
 # ----------------------------------------
-
-
 class ResetPasswordForm(FlaskForm):
     password = PasswordField(
         "New Password",
