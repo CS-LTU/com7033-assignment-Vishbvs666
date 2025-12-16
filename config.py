@@ -43,7 +43,7 @@ class Config:
     SECURITY_SESSION_MINUTES = int(os.environ.get("SECURITY_SESSION_MINUTES", 60))
 
     # -------------------------
-    # Global Rate Limiting (if you use Flask-Limiter elsewhere)
+    # Global Rate Limiting 
     # -------------------------
     RATELIMIT_DEFAULT = os.environ.get("RATELIMIT_DEFAULT", "60 per minute")
 
