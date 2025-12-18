@@ -1579,6 +1579,6 @@ support systems.
 
 ### AI Usage Statement
 
-Generative AI tools were used in a limited and responsible manner to support planning, documentation refinement, and non-critical code optimisation. All core system design, security implementation, machine learning integration, testing, and final validation were carried out independently by the student.
+Generative AI tool ChatGPT was used in a limited and responsible manner to support planning, documentation refinement, and non-critical code optimisation. All core system design, security implementation, machine learning integration, testing, and final validation were carried out independently by the student.
 
 AI tools were used strictly as an aid to understanding and improvement, in line with the COM7033 guidance on ethical and transparent AI usage.
