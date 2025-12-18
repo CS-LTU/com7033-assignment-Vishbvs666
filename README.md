@@ -13,7 +13,9 @@ The system enables authorised users to securely:
 - Predict stroke risk using a machine learning model
 - Maintain ethical, secure, and professional handling of sensitive healthcare data
 
-Stroke is recognised by the **World Health Organization (WHO)** as the second leading cause of death globally. Early identification of high-risk patients is critical for preventative healthcare. StrokeCare addresses this challenge by integrating **secure software design**, **data-driven prediction**, and **role-based access control** into a single platform.
+Stroke is recognised by the **World Health Organization (WHO)** as the second leading cause of death globally. Early identification of high-risk patients is 
+critical for preventative healthcare. StrokeCare addresses this challenge by integrating **secure software design**, **data-driven prediction**, and **role-based 
+access control** into a single platform.
 
 The application has been developed in alignment with the **COM7033 Assessment 1 Brief**, demonstrating:
 - Secure programming practices
@@ -1516,31 +1518,67 @@ This improved data integrity and system stability.
 
 ## 10.4 Implementing Security Testing and Interpreting SAST Results
 
-Running Static Application Security Testing (SAST) tools such as Bandit and JIT introduced a learning challenge in interpreting security findings correctly. Some reported warnings required contextual judgement to distinguish genuine vulnerabilities from acceptable patterns in a controlled academic environment.
+Running Static Application Security Testing (SAST) tools such as Bandit and JIT introduced a learning challenge in interpreting security 
+findings correctly. Some reported warnings required contextual judgement to distinguish genuine vulnerabilities from acceptable patterns in a 
+controlled academic environment.
 
-Addressing this challenge involved reviewing tool documentation, manually validating code behaviour, and ensuring that no high-severity vulnerabilities were introduced into the system. This process strengthened understanding of secure coding practices and reinforced the importance of security-aware development.
+Addressing this challenge involved reviewing tool documentation, manually validating code behaviour, and ensuring that no high-severity 
+vulnerabilities were introduced into the system. This process strengthened understanding of secure coding practices and reinforced the 
+importance of security-aware development.
 
 
 ### 11. Limitations and Future work
-While StrokeCare demonstrates a robust integration of secure web development and machine learning–driven decision support, several limitations were identified during the design and implementation phases. These limitations also present clear opportunities for future enhancement.
+While StrokeCare demonstrates a robust integration of secure web development and machine learning–driven decision support, several limitations 
+were identified during the design and implementation phases. These limitations also present clear opportunities for future enhancement.
 
-One key limitation lies in the machine learning model and dataset scope. The Random Forest classifier was trained using a publicly available Kaggle stroke dataset, which, while suitable for academic experimentation, may not fully represent real-world clinical populations. The dataset contains class imbalance and limited demographic diversity, which can affect generalisability. Future work could involve training models on larger, clinically validated datasets and exploring advanced techniques such as class balancing, ensemble optimisation, or deep learning–based architectures to improve predictive robustness.
+One key limitation lies in the machine learning model and dataset scope. The Random Forest classifier was trained using a publicly available 
+Kaggle stroke dataset, which, while suitable for academic experimentation, may not fully represent real-world clinical populations. The dataset 
+contains class imbalance and limited demographic diversity, which can affect generalisability. Future work could involve training models on 
+larger, clinically validated datasets and exploring advanced techniques such as class balancing, ensemble optimisation, or deep learning–based 
+architectures to improve predictive robustness.
 
-Another limitation concerns model explainability. Although probability scores and categorical risk labels are presented transparently, the system does not currently provide feature-level explanations for predictions. In future iterations, explainable AI (XAI) techniques such as SHAP or feature importance visualisations could be integrated to improve clinical interpretability and trust, particularly for healthcare professionals reviewing risk outputs.
+Another limitation concerns model explainability. Although probability scores and categorical risk labels are presented transparently, the 
+system does not currently provide feature-level explanations for predictions. In future iterations, explainable AI (XAI) techniques such as SHAP 
+or feature importance visualisations could be integrated to improve clinical interpretability and trust, particularly for healthcare 
+professionals reviewing risk outputs.
 
-From a security and compliance perspective, StrokeCare aligns with OWASP Top 10 principles and HIPAA-inspired technical safeguards; however, it does not implement full regulatory compliance workflows. Future work could include encryption at rest, fine-grained consent management, role-based data minimisation, and integration with secure cloud infrastructure to more closely mirror production-grade healthcare systems.
+From a security and compliance perspective, StrokeCare aligns with OWASP Top 10 principles and HIPAA-inspired technical safeguards; however, it 
+does not implement full regulatory compliance workflows. Future work could include encryption at rest, fine-grained consent management, role-
+based data minimisation, and integration with secure cloud infrastructure to more closely mirror production-grade healthcare systems.
 
-The current implementation also runs in a local development environment. A future deployment could involve containerisation using Docker, secure CI/CD pipelines, HTTPS enforcement, and cloud-based hosting with environment isolation to demonstrate real-world operational readiness.
+The current implementation also runs in a local development environment. A future deployment could involve containerisation using Docker, secure 
+CI/CD pipelines, HTTPS enforcement, and cloud-based hosting with environment isolation to demonstrate real-world operational readiness.
 
-Finally, while functional and security testing were implemented, test coverage remains partial. Expanding automated test suites to include end-to-end (E2E) testing, UI interaction testing, and adversarial security testing would further strengthen system reliability and resilience.
+Finally, while functional and security testing were implemented, test coverage remains partial. Expanding automated test suites to include end-
+to-end (E2E) testing, UI interaction testing, and adversarial security testing would further strengthen system reliability and resilience.
 
-Overall, these limitations do not detract from the academic objectives of StrokeCare but instead highlight meaningful avenues for future development. The project provides a strong foundation for extending secure, ethical, and explainable machine learning systems within healthcare-oriented applications.
+Overall, these limitations do not detract from the academic objectives of StrokeCare but instead highlight meaningful avenues for future 
+development. The project provides a strong foundation for extending secure, ethical, and explainable machine learning systems within healthcare-
+oriented applications.
 
 ### 12. Conclusion
-StrokeCare represents a comprehensive secure software development artefact that successfully integrates role-based web application architecture, machine learning–driven decision support, and healthcare-aware security practices within a single, coherent system. The application demonstrates how predictive analytics can be responsibly embedded into a clinical workflow while maintaining strict access control, data protection, and ethical awareness.
+StrokeCare represents a comprehensive secure software development artefact that successfully integrates role-based web application architecture, 
+machine learning–driven decision support, and healthcare-aware security practices within a single, coherent system. The application demonstrates 
+how predictive analytics can be responsibly embedded into a clinical workflow while maintaining strict access control, data protection, and 
+ethical awareness.
 
-Through the implementation of structured authentication and authorisation mechanisms, robust input validation, audit logging, and static security analysis, StrokeCare aligns closely with industry-recognised secure coding standards, including the OWASP Top 10 and HIPAA-inspired technical safeguards. These measures ensure that sensitive health-related data is handled securely and access is restricted according to clearly defined clinical and administrative roles.
+Through the implementation of structured authentication and authorisation mechanisms, robust input validation, audit logging, and static 
+security analysis, StrokeCare aligns closely with industry-recognised secure coding standards, including the OWASP Top 10 and HIPAA-inspired 
+technical safeguards. These measures ensure that sensitive health-related data is handled securely and access is restricted according to clearly 
+defined clinical and administrative roles.
 
-The integration of a Random Forest–based stroke risk prediction model further illustrates how machine learning can enhance clinical awareness when presented transparently and used strictly as a decision-support tool rather than a diagnostic system. By providing probabilistic risk estimates alongside clear medical disclaimers, the system supports informed decision-making without overstating the authority of automated predictions.
+The integration of a Random Forest–based stroke risk prediction model further illustrates how machine learning can enhance clinical awareness 
+when presented transparently and used strictly as a decision-support tool rather than a diagnostic system. By providing probabilistic risk 
+estimates alongside clear medical disclaimers, the system supports informed decision-making without overstating the authority of automated 
+predictions.
 
-Overall, StrokeCare reflects professional secure software engineering practice, demonstrates a strong understanding of healthcare security responsibilities, and establishes a solid foundation for future extension toward scalable, explainable, and regulation-ready clinical decision-support systems.
+Overall, StrokeCare reflects professional secure software engineering practice, demonstrates a strong understanding of healthcare security 
+responsibilities, and establishes a solid foundation for future extension toward scalable, explainable, and regulation-ready clinical decision-
+support systems.
+
+
+### AI Usage Statement
+
+Generative AI tools were used in a limited and responsible manner to support planning, documentation refinement, and non-critical code optimisation. All core system design, security implementation, machine learning integration, testing, and final validation were carried out independently by the student.
+
+AI tools were used strictly as an aid to understanding and improvement, in line with the COM7033 guidance on ethical and transparent AI usage.
