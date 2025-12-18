@@ -1498,7 +1498,7 @@ Clear medical disclaimers were always displayed
 
 The final implementation provides a clear, interpretable results page that communicates risk responsibly while reinforcing that predictions are informational and not diagnostic.
 
-![Machine Learning Prediction Errors](docs/images/ml_error.png)
+![Machine Learning Prediction Errors](docs/images/ml_errors.png)
 
 ## 10.3 Database Handling and Data Import Issues
 
