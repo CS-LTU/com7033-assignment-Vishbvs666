@@ -1316,7 +1316,7 @@ This design enforces the principle of **least privilege** while maximising clini
 
 ---
 
-## 8. Testing, Validation, and Security Assessment
+### 8. Testing, Validation, and Security Assessment
 
 StrokeCare was systematically tested to ensure functional correctness, security robustness, and reliability across all user roles and workflows. A layered testing strategy was adopted, combining automated testing, static application security testing (SAST), code coverage analysis, and manual UI verification to validate both functional and non-functional requirements.
 
