@@ -165,7 +165,7 @@ This separation ensures that sensitive data is handled securely while keeping th
 The presentation layer is responsible for all user interaction with the system. It is implemented using **HTML templates rendered by Flask**, styled with **Bootstrap** to ensure a clean, responsive, and professional interface suitable for healthcare environments.
 
 Key responsibilities of this layer include:
-- Displaying dashboards for different user roles (Admin, Doctor, HCP)
+- Displaying dashboards for different user roles (Admin, Doctor, HCP or Patient)
 - Collecting user input through validated forms
 - Presenting patient data and stroke risk results in a clear, readable format
 - Preventing accidental actions through confirmation prompts
