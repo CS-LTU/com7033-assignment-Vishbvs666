@@ -1316,21 +1316,88 @@ This design enforces the principle of **least privilege** while maximising clini
 
 ---
 
-### 8. Testing, Security Validation, and Quality Assurance
+## 8. Testing, Validation, and Security Assessment
 
-Testing and security validation were integral to the development of StrokeCare to ensure functional correctness, reliability, and secure handling of healthcare-related data. A layered testing strategy combining automated testing, code coverage analysis, and static application security testing (SAST) was adopted to validate both functional and non-functional requirements of the system.
+StrokeCare was systematically tested to ensure functional correctness, security robustness, and reliability across all user roles and workflows. A layered testing strategy was adopted, combining automated testing, static application security testing (SAST), code coverage analysis, and manual UI verification to validate both functional and non-functional requirements.
 
-Functional testing was implemented using PyTest, enabling systematic verification of critical application behaviour. Test cases were written to validate authentication and authorisation workflows, patient data handling, machine learning prediction services, and clinical risk classification logic. Particular emphasis was placed on testing the stroke risk prediction pipeline, ensuring that patient form inputs were correctly mapped to model features and that predicted risk labels (low, medium, high) were consistently generated. All implemented test cases passed successfully, demonstrating stability and correctness of core system functionality.
+---
 
-To assess test completeness and identify untested code paths, code coverage analysis was performed using the coverage.py tool. An HTML coverage report was generated to provide detailed visibility into statement-level coverage across application modules, including routes, models, utilities, and machine learning services. While achieving full coverage was not the primary objective of this academic artefact, coverage analysis was used to confirm that security-critical and high-risk components were adequately exercised by automated tests.
+### 8.1 Automated Functional Testing
 
-In addition to functional testing, Static Application Security Testing (SAST) was conducted to proactively identify potential security weaknesses. The Bandit security scanner was used to analyse the Python codebase for insecure coding patterns, such as unsafe function usage, weak cryptographic practices, and configuration-related risks. Both summary and detailed Bandit reports were generated and included in the repository as evidence of security assessment and secure development practice.
+Automated tests were implemented using **PyTest** to verify the correctness of core application logic and critical workflows.
 
-Further static analysis was performed using JIT-based security inspection, producing structured JSON and SARIF reports suitable for audit and review. These reports complement Bandit analysis by providing additional visibility into potential security risks and reinforcing alignment with OWASP secure coding recommendations.
+![PyTest Results](docs/images/pytest_results.png)
 
-Version control and quality assurance workflows were managed using Git and GitHub, ensuring traceability of changes, reproducibility of results, and disciplined software engineering practice. All testing artefacts—including automated test results, coverage reports, and SAST outputs—were retained within the project repository to provide transparent evidence of testing rigour and security awareness.
+Testing focused on:
+- User registration, login, and logout flows  
+- Role-based access control (Admin, Doctor, HCP, Patient)  
+- Patient record creation, update, filtering, and deletion  
+- Stroke risk prediction request handling and result generation  
+- Input validation and error-handling behaviour  
 
-Overall, the combination of automated testing, coverage evaluation, and static security analysis demonstrates a professional and security-conscious approach to software development. This testing framework ensures that StrokeCare is functionally robust, security-aware, and aligned with best practices for developing healthcare-oriented software systems.
+All tests were executed within an isolated virtual environment to ensure reproducibility. Successful test execution confirms that key system features behave as expected under normal and edge-case conditions.
+
+---
+
+### 8.2 Machine Learning Prediction Validation
+
+The machine learning integration was tested to ensure safe and consistent use of the trained **Random Forest** model within the web application.
+
+![ML Prediction Test Output](docs/images/ml_prediction_test.png)
+
+Validation included:
+- Correct extraction and preprocessing of user-provided inputs  
+- Robust handling of missing or optional values  
+- Consistent mapping between probability scores and risk categories (Low, Medium, High)  
+- End-to-end verification of prediction requests via the service layer  
+
+These tests ensure that prediction outputs presented to users accurately reflect the trained model while maintaining abstraction of internal model logic.
+
+---
+
+### 8.3 Static Application Security Testing (SAST)
+
+Static Application Security Testing was conducted to proactively identify potential security vulnerabilities in the Python codebase.
+
+![Bandit SAST Report](docs/images/bandit_report.png)
+
+The following tools were used:
+- **Bandit** – to detect insecure coding patterns, unsafe function usage, and cryptographic issues  
+- **JIT (SARIF/JSON output)** – to generate structured security findings suitable for audit and review  
+
+All generated SAST reports are included in the repository as evidence of secure development practice and alignment with OWASP recommendations.
+
+---
+
+### 8.4 Code Coverage Analysis
+
+Code coverage analysis was performed using **coverage.py** to assess the extent to which automated tests exercise the application codebase.
+
+![Coverage Report](docs/images/coverage_report.png)
+
+Coverage results demonstrate strong test depth across:
+- Authentication and authorisation logic  
+- Role-based access controls  
+- Utility and validation modules  
+- Machine learning prediction services  
+
+While achieving full coverage was not the primary objective of this academic artefact, coverage analysis was used to confirm that security-critical components were adequately tested.
+
+---
+
+### 8.5 Manual Testing and User Interface Verification
+
+Manual testing was performed by interacting directly with the application’s user interface across all roles (Admin, Doctor, HCP, and Patient). This included verifying dashboard navigation, form behaviour, role-based access restrictions, filtering, and data visualisation components.
+
+Manual testing complements automated testing by validating real user interactions and visual behaviour that are difficult to fully automate.
+
+---
+
+### Summary
+
+The combined use of automated testing, machine learning validation, static security analysis, coverage evaluation, and manual verification provides strong assurance that StrokeCare is functionally reliable and security-aware. This comprehensive testing approach aligns with best practices for secure software development and supports the overall integrity of the application.
+
+
 
 
 ## 9. OWASP and HIPAA-Aligned Security Compliance
@@ -1393,7 +1460,71 @@ HIPAA compliance extends beyond technical implementation to include organisation
 
 ---
 
-## 10. Conclusion
+
+### 10. Challenges during the project 
+
+Developing StrokeCare involved integrating secure web application development, machine learning inference, and healthcare-style data handling within a single system. Several technical challenges were encountered during implementation, testing, and integration, particularly when combining machine learning logic with backend workflows and database persistence.
+
+## 10.1 Machine Learning Integration and Runtime Errors
+
+One of the main challenges occurred during the integration of the trained Random Forest model into the Flask prediction route. During early testing, the application raised runtime errors when attempting to calculate stroke risk probabilities.
+
+The error occurred because an incorrect object was passed into the prediction function, causing a failure when calling the predict_proba method. This highlighted the complexity of managing data flow between form input handling, feature preprocessing, and model inference.
+
+Resolving this issue required:
+
+Tracing the request flow from the prediction form to the ML service
+
+Refactoring the prediction logic to ensure the trained model instance was always used
+
+Separating feature extraction, model loading, and inference responsibilities
+
+This process improved the reliability and maintainability of the machine learning integration.
+
+![Attribute Errors](docs/images/attribute_error.png)
+
+
+## 10.2 Prediction Output Consistency and User Feedback
+
+Another challenge involved ensuring consistency between backend prediction results and frontend presentation. Early iterations showed mismatches between predicted probabilities, risk labels, and how results were displayed to users.
+
+This required careful coordination between backend services and frontend templates to ensure:
+
+Risk levels and probability scores were aligned
+
+Missing or optional inputs were handled safely
+
+Clear medical disclaimers were always displayed
+
+The final implementation provides a clear, interpretable results page that communicates risk responsibly while reinforcing that predictions are informational and not diagnostic.
+
+![Machine Learning Prediction Errors](docs/images/ml_error.png)
+
+## 10.3 Database Handling and Data Import Issues
+
+StrokeCare uses a dual-database architecture, combining SQLite for authentication and audit data with MongoDB for patient records and predictions. During development, challenges arose related to importing dataset records, handling duplicates, and maintaining schema consistency.
+
+These issues were addressed through:
+
+- Custom data import and cleanup scripts
+
+- Validation checks before database writes
+
+- Soft-deletion strategies to avoid permanent data loss
+
+This improved data integrity and system stability.
+
+## 10.4 Implementing Security Testing and Interpreting SAST Results
+
+Running Static Application Security Testing (SAST) tools such as Bandit and JIT introduced a learning challenge in interpreting security findings correctly. Some reported warnings required contextual judgement to distinguish genuine vulnerabilities from acceptable patterns in a controlled academic environment.
+
+Addressing this challenge involved reviewing tool documentation, manually validating code behaviour, and ensuring that no high-severity vulnerabilities were introduced into the system. This process strengthened understanding of secure coding practices and reinforced the importance of security-aware development.
+
+
+### 11. Limitations and Future work
+
+
+### 12. Conclusion
 
 StrokeCare represents a comprehensive secure software development artefact that integrates role-based web application design, machine learning–driven decision support, and healthcare-
 aware security practices within a single, coherent system. The application demonstrates how predictive analytics can be responsibly embedded into a clinical workflow while maintaining 
