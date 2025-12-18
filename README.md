@@ -139,10 +139,53 @@ Once the server is running, open a web browser and navigate to:
 http://127.0.0.1:5000
 ```
 
-## 4.5 Tools and Frameworks used in the project 
-- Backend- Flask
-- Frontend- HTML/CSS/JavaScript, Bootstrap 5
-- Dataset used- https://www.kaggle.com/datasets/fedesoriano/stroke-prediction-dataset/data
+## 4.5 Tools, Technologies, and Frameworks Used
+
+The StrokeCare application was developed using a combination of modern backend frameworks, frontend technologies, machine learning libraries, databases, and security/testing tools. Each 
+tool was selected to support secure software development, maintainability, and alignment with healthcare-oriented application requirements.
+
+### Backend and Web Frameworks
+- **Flask (Python)** – Used as the core web framework to implement routing, authentication, role-based access control, and application logic in a lightweight and modular manner.
+- **Flask-Login** – Manages user authentication, session handling, and secure login/logout functionality.
+- **Flask-WTF** – Provides secure form handling with built-in CSRF protection and input validation.
+- **Jinja2** – Template engine used to safely render dynamic HTML content with automatic output escaping.
+
+### Frontend Technologies
+- **HTML5 / CSS3 / JavaScript** – Used to build responsive and interactive user interfaces.
+- **Bootstrap 5** – Provides a consistent, professional UI layout with responsive components suitable for healthcare environments.
+- **Chart.js** – Used for data visualisation, including risk distribution charts and analytics dashboards.
+
+### Databases and Data Storage
+- **SQLite** – Used for storing user authentication data such as credentials, roles, and session information.
+- **MongoDB** – Used for storing patient records, clinical attributes, and machine learning prediction results.
+- **Separation of Databases** – Authentication data and patient medical data are stored in separate databases to improve security and enforce separation of concerns.
+
+### Machine Learning and Data Processing
+- **scikit-learn** – Used to train the stroke risk prediction model, specifically implementing a **Random Forest Classifier**.
+- **pandas & NumPy** – Used for data cleaning, preprocessing, feature engineering, and numerical computation during model training.
+- **joblib** – Used to serialise and load the trained machine learning model into the Flask application for inference.
+- **Kaggle Stroke Prediction Dataset** – A publicly available, anonymised dataset used for model training and evaluation:  
+  https://www.kaggle.com/datasets/fedesoriano/stroke-prediction-dataset/data
+
+### Security and Compliance Tooling
+- **Werkzeug Security Utilities** – Used for secure password hashing and verification.
+- **Custom RBAC Middleware** – Implements role-based access control across application routes.
+- **Security Headers Configuration** – Applied to reduce exposure to common web-based attacks.
+- **Audit Logging Utilities** – Track security-relevant user actions and system events.
+
+### Testing, Quality Assurance, and Analysis
+- **pytest** – Used for unit and integration testing of authentication flows, patient management, and prediction logic.
+- **coverage.py** – Measures test coverage to ensure critical code paths are exercised.
+- **Bandit** – Static Application Security Testing (SAST) tool used to identify potential Python security issues.
+- **JIT Security Scanning** – Used to generate additional security analysis and SARIF reports for secure development evidence.
+
+### Development and Version Control
+- **Git & GitHub** – Used for version control, collaboration, and secure source code management.
+- **Python Virtual Environment (venv)** – Isolates project dependencies and ensures reproducible builds.
+- **VS Code** – Primary development environment for coding, testing, and debugging.
+
+This combination of tools and frameworks enabled the development of a secure, modular, and extensible healthcare-oriented web application while supporting best practices in secure software development and machine learning integration.
+
 
 ---
 
@@ -259,12 +302,355 @@ This architecture provides several advantages:
 - **Professionalism:** Reflects industry-aligned practices expected in healthcare software systems
 
 ---
+### 5.8 File structure of the Project 
+
+```bash
+.
+├── README.md
+├── User Manual of StrokeCare.md
+├── __pycache__
+│   ├── config.cpython-313 2.pyc
+│   └── config.cpython-313.pyc
+├── add_headers.py
+├── app
+│   ├── __init__.py
+│   ├── __pycache__
+│   │   ├── __init__.cpython-313.pyc
+│   │   ├── config.cpython-313.pyc
+│   │   ├── extensions.cpython-313.pyc
+│   │   ├── forms.cpython-313.pyc
+│   │   ├── models.cpython-313.pyc
+│   │   └── rbac.cpython-313.pyc
+│   ├── auth
+│   ├── config.py
+│   ├── db
+│   │   ├── __pycache__
+│   │   │   └── mongo.cpython-313.pyc
+│   │   └── mongo.py
+│   ├── extensions.py
+│   ├── forms.py
+│   ├── ml
+│   │   ├── __init__.py
+│   │   ├── __pycache__
+│   │   │   ├── __init__.cpython-313 2.pyc
+│   │   │   ├── __init__.cpython-313.pyc
+│   │   │   ├── model.cpython-313 2.pyc
+│   │   │   ├── model.cpython-313.pyc
+│   │   │   ├── predict.cpython-313.pyc
+│   │   │   ├── predict_service.cpython-313 2.pyc
+│   │   │   ├── predict_service.cpython-313.pyc
+│   │   │   └── train_model.cpython-313.pyc
+│   │   ├── model.py
+│   │   ├── model_info.json
+│   │   ├── predict.py
+│   │   ├── predict_service.py
+│   │   └── train_model.py
+│   ├── models
+│   │   ├── __init__.py
+│   │   ├── __pycache__
+│   │   │   ├── __init__.cpython-313 2.pyc
+│   │   │   ├── __init__.cpython-313.pyc
+│   │   │   ├── audit_log.cpython-313 2.pyc
+│   │   │   ├── audit_log.cpython-313.pyc
+│   │   │   ├── login_security.cpython-313.pyc
+│   │   │   ├── models.cpython-313.pyc
+│   │   │   ├── password_reset.cpython-313 2.pyc
+│   │   │   ├── password_reset.cpython-313.pyc
+│   │   │   ├── session.cpython-313 2.pyc
+│   │   │   ├── session.cpython-313.pyc
+│   │   │   ├── stroke_prediction.cpython-313 2.pyc
+│   │   │   ├── stroke_prediction.cpython-313.pyc
+│   │   │   ├── user.cpython-313 2.pyc
+│   │   │   └── user.cpython-313.pyc
+│   │   ├── audit_log.py
+│   │   ├── login_security.py
+│   │   ├── models.py
+│   │   ├── password_reset.py
+│   │   ├── session.py
+│   │   ├── stroke_prediction.py
+│   │   └── user.py
+│   ├── models.py
+│   ├── rbac.py
+│   ├── routes
+│   │   ├── __init__.py
+│   │   ├── __pycache__
+│   │   │   ├── __init__.cpython-313.pyc
+│   │   │   ├── admin.cpython-313 2.pyc
+│   │   │   ├── admin.cpython-313.pyc
+│   │   │   ├── auth.cpython-313 2.pyc
+│   │   │   ├── auth.cpython-313.pyc
+│   │   │   ├── doctor.cpython-313.pyc
+│   │   │   ├── hcp.cpython-313.pyc
+│   │   │   ├── main.cpython-313.pyc
+│   │   │   ├── patient.cpython-313 2.pyc
+│   │   │   ├── patient.cpython-313.pyc
+│   │   │   ├── patients.cpython-313.pyc
+│   │   │   ├── predict.cpython-313 2.pyc
+│   │   │   ├── predict.cpython-313.pyc
+│   │   │   ├── privacy.cpython-313 2.pyc
+│   │   │   └── privacy.cpython-313.pyc
+│   │   ├── admin.py
+│   │   ├── auth.py
+│   │   ├── doctor.py
+│   │   ├── hcp.py
+│   │   ├── main.py
+│   │   ├── patient.py
+│   │   ├── patients.py
+│   │   ├── predict.py
+│   │   └── privacy.py
+│   ├── static
+│   │   ├── css
+│   │   │   └── theme.css
+│   │   ├── images
+│   │   │   ├── logo.png
+│   │   │   └── signin-image.jpg
+│   │   └── js
+│   │       ├── charts.js
+│   │       └── dashboard.js
+│   ├── templates
+│   │   ├── _partials
+│   │   │   └── navbar.html
+│   │   ├── admin
+│   │   │   ├── analytics.html
+│   │   │   ├── audit_logs.html
+│   │   │   ├── dashboard.html
+│   │   │   ├── overview.html
+│   │   │   ├── patient_form.html
+│   │   │   ├── patients.html
+│   │   │   ├── user_form.html
+│   │   │   └── users.html
+│   │   ├── auth
+│   │   │   ├── __init__.py
+│   │   │   ├── __pycache__
+│   │   │   ├── forgot.html
+│   │   │   ├── login.html
+│   │   │   ├── register.html
+│   │   │   └── reset.html
+│   │   ├── base.html
+│   │   ├── components
+│   │   ├── dashboard
+│   │   │   └── index.html
+│   │   ├── doctor
+│   │   │   ├── analytics.html
+│   │   │   ├── dashboard.html
+│   │   │   ├── patient_detail.html
+│   │   │   ├── patient_new.html
+│   │   │   └── patients.html
+│   │   ├── hcp
+│   │   │   ├── dashboard.html
+│   │   │   ├── monitoring.html
+│   │   │   ├── patient_detail.html
+│   │   │   ├── patient_form.html
+│   │   │   ├── patients.html
+│   │   │   ├── patients_high.html
+│   │   │   └── tasks.html
+│   │   ├── main
+│   │   │   └── coming_soon.html
+│   │   ├── my
+│   │   │   └── reports.html
+│   │   ├── patient
+│   │   │   ├── dashboard.html
+│   │   │   ├── education.html
+│   │   │   ├── predictions.html
+│   │   │   └── profile.html
+│   │   ├── patients
+│   │   │   ├── detail.html
+│   │   │   └── list.html
+│   │   └── predict
+│   │       ├── form.html
+│   │       ├── result.html
+│   │       └── run.html
+│   └── utils
+│       ├── __init__.py
+│       ├── __pycache__
+│       │   ├── __init__.cpython-313.pyc
+│       │   ├── audit.cpython-313.pyc
+│       │   ├── auth.cpython-313.pyc
+│       │   ├── export.cpython-313.pyc
+│       │   ├── metrics.cpython-313.pyc
+│       │   ├── password_reset.cpython-313.pyc
+│       │   ├── privacy.cpython-313.pyc
+│       │   ├── purge.cpython-313.pyc
+│       │   └── validators.cpython-313.pyc
+│       ├── audit.py
+│       ├── auth.py
+│       ├── export.py
+│       ├── metrics.py
+│       ├── password_reset.py
+│       ├── privacy.py
+│       ├── purge.py
+│       └── validators.py
+├── bandit-report.txt
+├── bandit_report(detailed).txt
+├── bandit_report.json
+├── config.py
+├── coverage_report.zip
+├── data
+│   └── healthcare-dataset-stroke-data.csv
+├── docs
+│   └── images
+│       ├── add_patient.png
+│       ├── admin_analytics.pn.png
+│       ├── admin_analytics.png
+│       ├── admin_dashboard.png
+│       ├── admin_patient_management.png
+│       ├── doctor_add_patient.png
+│       ├── doctor_analytics.png).png
+│       ├── doctor_dashboard.png
+│       ├── doctor_patient_detail.png
+│       ├── doctor_patients.png
+│       ├── hcp_add_patient.png).png
+│       ├── hcp_assigned_patients.png
+│       ├── hcp_dashboard.png
+│       ├── hcp_high_risk.png
+│       ├── hcp_monitoring.png
+│       ├── hcp_patient_care.png
+│       ├── hcp_tasks.png
+│       ├── high_risk_patients.png
+│       ├── login_page.png
+│       ├── patient_dashboard.png
+│       ├── patient_education.png
+│       ├── patient_prediction_form.png
+│       ├── patient_predictions.png
+│       ├── patient_profile.png
+│       ├── register_page.png
+│       ├── stroke_prediction.png
+│       └── user_management.png
+├── github
+│   └── copilot-context.md
+├── htmlcov
+│   ├── class_index.html
+│   ├── coverage_html_cb_bcae5fc4.js
+│   ├── favicon_32_cb_58284776.png
+│   ├── function_index.html
+│   ├── index.html
+│   ├── keybd_closed_cb_ce680311.png
+│   ├── status.json
+│   ├── style_cb_a5a05ca4.css
+│   ├── z_395c4f306d1419cf_mongo_py.html
+│   ├── z_5f5a17c013354698___init___py.html
+│   ├── z_5f5a17c013354698_config_py.html
+│   ├── z_5f5a17c013354698_extensions_py.html
+│   ├── z_5f5a17c013354698_forms_py.html
+│   ├── z_5f5a17c013354698_models_py.html
+│   ├── z_5f5a17c013354698_rate_limit_py.html
+│   ├── z_5f5a17c013354698_rbac_py.html
+│   ├── z_6c0e4b930745278b___init___py.html
+│   ├── z_6c0e4b930745278b_audit_log_py.html
+│   ├── z_6c0e4b930745278b_models_py.html
+│   ├── z_6c0e4b930745278b_password_reset_py.html
+│   ├── z_6c0e4b930745278b_session_py.html
+│   ├── z_6c0e4b930745278b_stroke_prediction_py.html
+│   ├── z_6c0e4b930745278b_user_py.html
+│   ├── z_748a0465d46c2a16___init___py.html
+│   ├── z_748a0465d46c2a16_audit_py.html
+│   ├── z_748a0465d46c2a16_auth_py.html
+│   ├── z_748a0465d46c2a16_export_py.html
+│   ├── z_748a0465d46c2a16_metrics_py.html
+│   ├── z_748a0465d46c2a16_password_reset_py.html
+│   ├── z_748a0465d46c2a16_privacy_py.html
+│   ├── z_748a0465d46c2a16_purge_py.html
+│   ├── z_748a0465d46c2a16_validators_py.html
+│   ├── z_84d4c024a05dd3c5___init___py.html
+│   ├── z_84d4c024a05dd3c5_model_py.html
+│   ├── z_84d4c024a05dd3c5_predict_py.html
+│   ├── z_84d4c024a05dd3c5_predict_service_py.html
+│   ├── z_84d4c024a05dd3c5_train_model_py.html
+│   ├── z_aaaf4d6ac3ed1074_flash_html.html
+│   ├── z_c6de83248c84ada5___init___py.html
+│   ├── z_c6de83248c84ada5_admin_py.html
+│   ├── z_c6de83248c84ada5_auth_py.html
+│   ├── z_c6de83248c84ada5_doctor_py.html
+│   ├── z_c6de83248c84ada5_hcp_py.html
+│   ├── z_c6de83248c84ada5_main_py.html
+│   ├── z_c6de83248c84ada5_patient_py.html
+│   ├── z_c6de83248c84ada5_patients_py.html
+│   ├── z_c6de83248c84ada5_predict_py.html
+│   └── z_c6de83248c84ada5_privacy_py.html
+├── instance
+│   ├── stroke_model.joblib
+│   └── strokecare.db
+├── jit_report.json
+├── jit_report.sarif
+├── migrations
+├── ml
+│   ├── __init__.py
+│   └── train_model.py
+├── requirements.txt
+├── run.py
+├── scripts
+│   ├── compute_ml_for_existing_docs.py
+│   ├── dedupe_patients_by_original_id.py
+│   ├── import_kaggle_with_ml.py
+│   ├── import_stroke_csv_to_mongo.py
+│   └── purge_jobs.py
+├── tests
+│   ├── __init__.py
+│   ├── conftest.py
+│   ├── test_auth.py
+│   ├── test_patients.py
+│   ├── test_predict_form_features.py
+│   ├── test_predict_service.py
+│   ├── test_risk_label.py
+│   └── test_security.py
+├── venv
+│   ├── bin
+│   │   ├── Activate.ps1
+│   │   ├── activate
+│   │   ├── activate.csh
+│   │   ├── activate.fish
+│   │   ├── alembic
+│   │   ├── bandit
+│   │   ├── bandit-baseline
+│   │   ├── bandit-config-generator
+│   │   ├── coverage
+│   │   ├── coverage-3.13
+│   │   ├── coverage3
+│   │   ├── dotenv
+│   │   ├── email_validator
+│   │   ├── f2py
+│   │   ├── flask
+│   │   ├── glom
+│   │   ├── httpx
+│   │   ├── jsonschema
+│   │   ├── mako-render
+│   │   ├── markdown-it
+│   │   ├── mcp
+│   │   ├── normalizer
+│   │   ├── numpy-config
+│   │   ├── opentelemetry-bootstrap
+│   │   ├── opentelemetry-instrument
+│   │   ├── pip
+│   │   ├── pip3
+│   │   ├── pip3.13
+│   │   ├── pwiz.py
+│   │   ├── py.test
+│   │   ├── pygmentize
+│   │   ├── pysemgrep
+│   │   ├── pytest
+│   │   ├── python -> python3.13
+│   │   ├── python3 -> python3.13
+│   │   ├── python3.13 -> /opt/homebrew/opt/python@3.13/bin/python3.13
+│   │   ├── semgrep
+│   │   └── uvicorn
+│   ├── include
+│   │   └── python3.13
+│   ├── lib
+│   │   └── python3.13
+│   │       └── site-packages
+│   ├── pyvenv.cfg
+│   └── share
+│       └── man
+│           └── man1
+└── wsgi.py
+
+```
+---
+
 
 ## 6. Application Features
 
 StrokeCare provides a range of secure, role-based features designed to support healthcare workflows while protecting sensitive data.
-
----
 
 ## 6.1 User Authentication Features
 
@@ -427,10 +813,6 @@ All Admin features are protected by:
 Administrators are responsible for maintaining system integrity, ensuring appropriate access, and supporting compliance with secure software development practices.
 
 ---
-
-### Summary
-
-The Admin module provides comprehensive control and visibility over the StrokeCare platform. By combining user management, patient oversight, and analytics, it enables administrators to manage the system responsibly while maintaining high standards of security, accountability, and usability.
 
 ## 6.3 Doctor Features and Clinical Workflow
 
@@ -722,13 +1104,11 @@ All actions are protected through secure session handling, input validation, and
 
 ---
 
-### Summary
-
-The HCP module focuses on operational efficiency, patient monitoring, and task coordination. By combining real-time risk insights, structured workflows, and strict access controls, StrokeCare enables healthcare professionals to support clinical decision-making while maintaining strong security boundaries.
-
 ## 6.5 Patient Features and Self-Service Workflow
 
-The Patient role in StrokeCare is designed to provide individuals with secure, read-only access to their own stroke risk information. Patients can view their latest risk assessments, track historical predictions, review personal profile details, and access educational content. This role supports transparency and patient awareness while ensuring that clinical decision-making remains with healthcare professionals.
+The Patient role in StrokeCare is designed to provide individuals with secure, read-only access to their own stroke risk information. Patients can view their latest risk assessments, 
+track historical predictions, review personal profile details, and access educational content. This role supports transparency and patient awareness while ensuring that clinical decision-
+making remains with healthcare professionals.
 
 ---
 
@@ -845,8 +1225,180 @@ All interactions are protected by secure authentication, session management, and
 
 ---
 
-### Summary
 
-The Patient module prioritises transparency, usability, and safety. By providing controlled access to personal risk information, historical assessments, and educational resources, StrokeCare empowers patients while maintaining strict boundaries around clinical responsibility and system security.
+## 7. Machine Learning Integration for Stroke Risk Prediction
+
+StrokeCare integrates a supervised machine learning model to support early identification of stroke risk based on patient health and lifestyle factors. The purpose of this integration is to demonstrate how predictive analytics can be securely embedded within a healthcare web application while maintaining ethical awareness and professional standards.
+
+### 7.1 Model Selection and Rationale
+
+A **Random Forest Classifier** was selected as the core prediction model for StrokeCare.
+
+This choice was based on several practical and academic considerations:
+- Random Forest performs well on **structured, tabular healthcare data**
+- It is robust to noise and missing values compared to single decision trees
+- It reduces overfitting through ensemble learning
+- It provides stable performance without requiring complex feature engineering
+
+These characteristics make Random Forest particularly suitable for stroke risk prediction using demographic, lifestyle, and clinical indicators.
+
+---
+
+### 7.2 Dataset and Feature Selection
+
+The model was trained using a **publicly available, anonymised stroke dataset** commonly used for academic research and demonstrations. The dataset contains no personally identifiable information (PII) and is appropriate for educational use.
+
+Key features used for training include:
+- Age and gender  
+- Hypertension and heart disease indicators  
+- Average glucose level and BMI  
+- Smoking status  
+- Work type and residence type  
+- Marital status  
+
+The target variable represents whether a stroke event occurred, allowing the model to learn patterns associated with increased stroke risk.
+
+---
+
+### 7.3 Data Preprocessing and Training Pipeline
+
+Before training, the dataset underwent standard preprocessing steps:
+- Categorical variables were encoded into numerical representations
+- Missing values were handled to avoid training bias
+- Feature scaling was applied where appropriate
+- The dataset was split into training and testing subsets
+
+The Random Forest model was trained using these processed features and evaluated on unseen test data to assess generalisation performance.
+
+---
+
+### 7.4 Model Performance and Accuracy
+
+The trained Random Forest model achieved an **overall accuracy of approximately 95%** on the test dataset.
+
+While accuracy is reported for transparency, it is important to note that:
+- Accuracy alone does not determine clinical reliability
+- The model is intended as a **decision-support tool**, not a diagnostic system
+- Predictions must always be interpreted by qualified healthcare professionals
+
+To improve interpretability, the model outputs both:
+- A **numeric probability score**
+- A corresponding **risk category**: Low, Medium, or High
+
+This ensures results are understandable to non-technical users.
+
+---
+
+### 7.5 Integration into the Web Application
+
+The trained model is integrated directly into the Flask backend of StrokeCare.
+
+When a user submits patient data through the prediction form:
+1. Input values are validated and sanitised
+2. Features are transformed into the format expected by the model
+3. The Random Forest model generates a probability score
+4. The score is mapped to a risk category
+5. Results are stored securely and displayed in the UI
+
+Predictions are automatically recalculated whenever patient data is updated, ensuring consistency across dashboards.
+
+---
+
+### 7.6 Role-Based Use of Predictions
+
+Machine learning predictions are exposed differently depending on user role:
+- **Doctors** can run predictions, view risk scores, and review prediction history
+- **HCPs** can view risk levels to support care monitoring and prioritisation
+- **Patients** can view their own risk summaries and prediction history
+- **Admins** can access aggregated analytics without modifying predictions
+
+This design enforces the principle of **least privilege** while maximising clinical usefulness.
+
+---
+
+### 8. Testing, Security Validation, and Quality Assurance
+
+Testing and security validation were integral to the development of StrokeCare to ensure functional correctness, reliability, and secure handling of healthcare-related data. A layered testing strategy combining automated testing, code coverage analysis, and static application security testing (SAST) was adopted to validate both functional and non-functional requirements of the system.
+
+Functional testing was implemented using PyTest, enabling systematic verification of critical application behaviour. Test cases were written to validate authentication and authorisation workflows, patient data handling, machine learning prediction services, and clinical risk classification logic. Particular emphasis was placed on testing the stroke risk prediction pipeline, ensuring that patient form inputs were correctly mapped to model features and that predicted risk labels (low, medium, high) were consistently generated. All implemented test cases passed successfully, demonstrating stability and correctness of core system functionality.
+
+To assess test completeness and identify untested code paths, code coverage analysis was performed using the coverage.py tool. An HTML coverage report was generated to provide detailed visibility into statement-level coverage across application modules, including routes, models, utilities, and machine learning services. While achieving full coverage was not the primary objective of this academic artefact, coverage analysis was used to confirm that security-critical and high-risk components were adequately exercised by automated tests.
+
+In addition to functional testing, Static Application Security Testing (SAST) was conducted to proactively identify potential security weaknesses. The Bandit security scanner was used to analyse the Python codebase for insecure coding patterns, such as unsafe function usage, weak cryptographic practices, and configuration-related risks. Both summary and detailed Bandit reports were generated and included in the repository as evidence of security assessment and secure development practice.
+
+Further static analysis was performed using JIT-based security inspection, producing structured JSON and SARIF reports suitable for audit and review. These reports complement Bandit analysis by providing additional visibility into potential security risks and reinforcing alignment with OWASP secure coding recommendations.
+
+Version control and quality assurance workflows were managed using Git and GitHub, ensuring traceability of changes, reproducibility of results, and disciplined software engineering practice. All testing artefacts—including automated test results, coverage reports, and SAST outputs—were retained within the project repository to provide transparent evidence of testing rigour and security awareness.
+
+Overall, the combination of automated testing, coverage evaluation, and static security analysis demonstrates a professional and security-conscious approach to software development. This testing framework ensures that StrokeCare is functionally robust, security-aware, and aligned with best practices for developing healthcare-oriented software systems.
 
 
+## 9. OWASP and HIPAA-Aligned Security Compliance
+
+StrokeCare is an academic secure software artefact and does not claim full regulatory certification as a deployed healthcare system. However, the application has been designed and implemented in alignment with the **OWASP Top 10** secure coding principles and **HIPAA-style technical safeguards**, particularly those related to access control, data protection, auditability, and secure handling of health-related information.
+
+---
+
+### 9.1 OWASP Top 10 Alignments
+
+StrokeCare mitigates common OWASP Top 10 web application risks through layered security controls integrated throughout the backend, routes, and utilities.
+
+**Broken Access Control:**  
+Role-Based Access Control (RBAC) is enforced across all protected routes, ensuring that users can only access views and actions permitted by their assigned role (Admin, Doctor, HCP, or Patient). Authorisation checks are implemented at both the route and logic levels, preventing privilege escalation and unauthorised access to patient data.
+
+**Identification and Authentication Failures:**  
+The authentication system uses secure password hashing, controlled login workflows, session handling, and logout mechanisms to reduce the risk of account compromise. Password reset and login security logic further strengthen identity verification and session integrity.
+
+**Injection Risks:**  
+All user inputs are validated server-side before processing. Database interactions use structured access patterns via SQLAlchemy and controlled MongoDB queries, reducing exposure to SQL and NoSQL injection attacks.
+
+**Cross-Site Scripting (XSS):**  
+User-facing content is rendered using Jinja2 templates with automatic escaping enabled by default. Combined with strict input validation, this reduces the likelihood of stored or reflected XSS vulnerabilities.
+
+**Security Misconfiguration:**  
+Sensitive configuration values and secrets are separated from the main source code and managed through dedicated configuration files. This reduces the risk of accidental exposure and supports safer deployment practices.
+
+**Security Logging and Monitoring:**  
+Security-relevant actions are captured through audit logging mechanisms, enabling traceability and accountability without exposing sensitive patient information. This supports detection and investigation of suspicious behaviour.
+
+**Secure Development Practices:**  
+Static Application Security Testing (SAST) was performed using tools such as Bandit and JIT, with reports included in the repository as evidence of proactive vulnerability assessment. Security-focused automated tests further validate the robustness of key system components.
+
+---
+
+### 9.2 HIPAA-Aligned Technical Safeguards
+
+While StrokeCare is not a production healthcare system, its architecture reflects core **HIPAA-style technical safeguards** expected in healthcare software.
+
+**Confidentiality and Access Control:**  
+Access to patient data is strictly limited based on role, ensuring that users only view information necessary for their responsibilities. Patients can only access their own data, while clinical and administrative functions are restricted to authorised staff.
+
+**Integrity Controls:**  
+Structured data handling, validated update flows, and controlled write operations help protect patient records from accidental or malicious corruption. Data modification privileges are carefully restricted to appropriate roles.
+
+**Audit Controls:**  
+Audit logging supports accountability by recording user activity related to sensitive operations. This aligns with HIPAA expectations for traceability and monitoring of access to health-related data.
+
+**Transmission and Deployment Considerations:**  
+Although StrokeCare runs locally during development, the system is designed with the assumption of secure deployment practices such as HTTPS/TLS, secure cookies, and environment-based configuration management in production environments.
+
+**Privacy-by-Design:**  
+Patient-facing interfaces provide read-only access to risk summaries, prediction history, and educational content, with clear disclaimers regarding the advisory nature of predictions. This ensures transparency while preventing misuse or misinterpretation of automated outputs.
+
+---
+
+### 9.3 Scope and Compliance Considerations
+
+HIPAA compliance extends beyond technical implementation to include organisational policies, governance frameworks, and operational controls. StrokeCare does not claim full HIPAA certification; however, the implemented access controls, audit mechanisms, secure authentication, and development practices demonstrate strong alignment with HIPAA-inspired technical safeguards and OWASP secure software development principles.
+
+---
+
+## 10. Conclusion
+
+StrokeCare represents a comprehensive secure software development artefact that integrates role-based web application design, machine learning–driven decision support, and healthcare-
+aware security practices within a single, coherent system. The application demonstrates how predictive analytics can be responsibly embedded into a clinical workflow while maintaining 
+strict access control, data protection, and ethical awareness. By combining structured authentication and authorisation mechanisms, robust input validation, audit logging, and static 
+security analysis, StrokeCare aligns with industry-recognised secure coding standards such as the OWASP Top 10 and HIPAA-inspired technical safeguards. The integration of a Random Forest–
+based stroke risk prediction model further illustrates how machine learning can enhance clinical awareness when presented transparently and used strictly as a decision-support tool 
+rather than a diagnostic system. Overall, StrokeCare reflects professional secure software engineering practice, evidences a clear understanding of healthcare security responsibilities, 
+and provides a solid foundation for future extensions toward real-world clinical deployment.
