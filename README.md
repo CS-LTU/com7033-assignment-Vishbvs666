@@ -1,4 +1,4 @@
-# StrokeCare — Secure Stroke Prediction & Patient Management System  
+# StrokeCare — Secure Stroke Prediction & Hospital Management System  
 **Module:** COM7033 – Secure Software Development  
 **Student ID:** 2415083  
 
